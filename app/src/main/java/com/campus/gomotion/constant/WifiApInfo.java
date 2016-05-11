@@ -13,9 +13,9 @@ public class WifiApInfo {
     /**
      * the name of wifi spot
      */
-    public static final String WIFI_AP_NAME = "motion";
+    public static final String WIFI_AP_NAME = "ant";
     /**
      * the password of wifi spot
      */
-    public static final String WIFI_AP_PASSWORD = "110110";
+    public static final String WIFI_AP_PASSWORD = "12345678";
 }

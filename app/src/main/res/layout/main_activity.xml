@@ -148,7 +148,7 @@
                             <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="跌倒次数统计（日）"/>
+                                    android:text="跌倒总次数"/>
                             <TextView
                                     android:id="@+id/fallingCount"
                                     android:layout_width="wrap_content"
@@ -166,7 +166,6 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="0"/>
-
                         </TableRow>
                     </TableLayout>
 

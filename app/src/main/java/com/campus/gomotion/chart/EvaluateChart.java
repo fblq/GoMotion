@@ -50,9 +50,9 @@ public class EvaluateChart extends AbstractDemoChart {
         }else{
             values.add(new double[]{100});
         }
-        int[] colors = new int[]{Color.BLUE,Color.LTGRAY};
+        int[] colors = new int[]{Color.BLUE,Color.GRAY};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
-        setChartSettings(renderer, "评估", "时间", "分数(%)", 0, 6, 0, 200, Color.GRAY, Color.LTGRAY);
+        setChartSettings(renderer, "评估", "时间", "分数(%)", 0, 6, 0, 200, Color.BLUE, Color.GRAY);
         renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
         renderer.getSeriesRendererAt(1).setDisplayChartValues(true);
         renderer.setXLabels(12);

@@ -148,26 +148,42 @@ public class MotionStatisticService {
     public void loadDataToCache() {
         long t = System.currentTimeMillis() - 30 * 60 * 1000;
         Date date = new Date(t);
-        fallingMap.put(date, falling);
-        runningMap.put(date, running);
-        walkingMap.put(date, walking);
+        if(falling != null){
+            fallingMap.put(date,falling);
+            falling.clear();
+        }
+        if(runningMap !=null){
+            runningMap.put(date,running);
+            running.clear();
+        }
+        if(walkingMap !=null){
+            walkingMap.put(date,walking);
+            walking.clear();
+        }
         /*fallingCache.put(falling);
         runningCache.put(running);
         walkingCache.put(walking);*/
-        falling.clear();
-        running.clear();
-        walking.clear();
     }
 
     /**
      * clear cache at 0:00 every day
      */
     public void clearCache() {
-        totalWalking.clear();
-        totalRunning.clear();
-        fallingMap.clear();
-        runningMap.clear();
-        walkingMap.clear();
+        if(totalWalking != null){
+            totalWalking.clear();
+        }
+        if(totalRunning != null){
+            totalRunning.clear();
+        }
+        if(fallingMap != null){
+            fallingMap.clear();
+        }
+        if(walkingMap != null){
+            walkingMap.clear();
+        }
+        if(runningMap != null){
+            runningMap.clear();
+        }
         /*fallingCache.clear();
         runningCache.clear();
         walkingCache.clear();*/

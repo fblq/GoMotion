@@ -42,24 +42,24 @@ public class SynchronizeService implements Callable<String> {
     public String call() {
         String hexStr = "0123456789ABCDEF";
         Quaternion quaternion = new Quaternion();
-        StringBuilder stringBuilder = new StringBuilder();
+        //StringBuilder stringBuilder = new StringBuilder();
         byte[] data = new byte[16];
         try {
             inputStream = new DataInputStream(socket.getInputStream());
             while (inputStream.read(data, 0, 16) != -1) {
-                quaternion.setW(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[2],data[3])));
                 quaternion.setW(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[4],data[5])));
-                quaternion.setW(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[6],data[7])));
-                quaternion.setW(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[8],data[9])));
+                quaternion.setX(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[6],data[7])));
+                quaternion.setY(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[8],data[9])));
+                quaternion.setZ(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[10],data[11])));
                 minuteCache.put(quaternion);
-                for (int i = 0; i < 16; i++) {
+               /* for (int i = 0; i < 16; i++) {
                     stringBuilder.append("-").append(hexStr.charAt(data[i]>>4 & 0x0f)).append(hexStr.charAt(data[i] & 0x0f));
-                }
+                }*/
                 Message message = handler.obtainMessage();
                 message.what = 0x12;
-                message.obj = stringBuilder.toString();
+                message.obj = quaternion.toString();
                 handler.sendMessage(message);
-                stringBuilder.delete(0, stringBuilder.length());
+                //stringBuilder.delete(0, stringBuilder.length());
                 Thread.sleep(20);
             }
         } catch (IOException e) {

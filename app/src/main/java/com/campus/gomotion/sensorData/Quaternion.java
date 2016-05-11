@@ -42,4 +42,10 @@ public class Quaternion {
     public void setZ(float z) {
         this.z = z;
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder().append(w).append(" & ").append(x).append(" & ")
+                .append(y).append(" & ").append(z).toString();
+    }
 }
