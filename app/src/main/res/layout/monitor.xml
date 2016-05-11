@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+
+              android:background="#00ff">
+
+
+    <fragment
+            android:id="@+id/monitorFragment"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            class="com.campus.gomotion.fragment.MonitorFragment"/>
+    <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" android:id="@+id/fallingDetail">
+        <TableRow>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fallingTime"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/interval"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                    android:id="@+id/fallingTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"/>
+            <TextView
+                    android:id="@+id/interval"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"/>
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>

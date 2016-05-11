@@ -1,0 +1,242 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:background="#7F7F7F"
+              tools:context=".MainActivity">
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/headbackground">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:text="GoMotion"
+                android:layout_weight="1"
+                android:id="@+id/textView" android:layout_centerVertical="true" android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"/>
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageButton"
+                android:src="@drawable/ic_mms_black_48dp"
+                android:layout_alignParentTop="true" android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" android:layout_marginRight="64dp" android:layout_marginEnd="64dp"/>
+    </RelativeLayout>
+    <TabHost
+            android:id="@+id/tabhost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+            <TabWidget
+                    android:id="@android:id/tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+            </TabWidget>
+
+            <FrameLayout
+                    android:id="@android:id/tabcontent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <!-- 第一个布局 -->
+                <LinearLayout
+                        android:id="@+id/view1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical" android:layout_gravity="right|top">
+
+                    <Button
+                            android:id="@+id/sportButton"
+                            android:layout_width="220dp"
+                            android:layout_height="220dp"
+                            android:layout_marginLeft="65dp"
+                            android:layout_marginTop="0dp"
+                            android:text="运动"
+                            android:textSize="50sp"
+                            android:background="@drawable/bigbutton2" android:allowUndo="false"/>
+                    <TextView
+                            android:id="@+id/textView1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="          你今天好像还没运动，快动起来吧！！！"
+                            android:textColor="#FF0000"
+                            android:textSize="15sp"/>
+
+                    <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal">
+                        <TableRow>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="类别	"/>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="时间(hh:mm)"/>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="距离(m)"/>
+                        </TableRow>
+                        <TableRow>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="步行	"/>
+                            <TextView
+                                    android:id="@+id/walkTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"/>
+                            <TextView
+                                    android:id="@+id/walkDistance"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"/>
+                        </TableRow>
+                        <TableRow>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="跑步	"/>
+                            <TextView
+                                    android:id="@+id/runTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"/>
+                            <TextView
+                                    android:id="@+id/runDistance"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"/>
+                        </TableRow>
+                    </TableLayout>
+
+                </LinearLayout>
+                <!-- 第二个布局 -->
+                <LinearLayout
+                        android:id="@+id/view2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                    <Button
+                            android:id="@+id/monitorButton"
+                            android:layout_width="220dp"
+                            android:layout_height="220dp"
+                            android:layout_marginLeft="65dp"
+                            android:layout_marginTop="0dp"
+                            android:text="监测"
+                            android:textSize="50sp"
+                            android:background="@drawable/bigbutton2"/>
+
+
+                    <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal">
+                        <TableRow>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="跌倒次数统计（日）"/>
+                            <TextView
+                                    android:id="@+id/fallingCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"/>
+
+                        </TableRow>
+                        <TableRow>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="平均耗时"/>
+                            <TextView
+                                    android:id="@+id/averageTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"/>
+
+                        </TableRow>
+                    </TableLayout>
+
+                </LinearLayout>
+
+                <!-- 第三个tab的布局 -->
+                <LinearLayout
+                        android:id="@+id/view3"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                    <Button
+                            android:id="@+id/assessButton"
+                            android:layout_width="220dp"
+                            android:layout_height="220dp"
+                            android:layout_marginLeft="65dp"
+                            android:layout_marginTop="0dp"
+                            android:text="评分"
+                            android:textSize="50sp"
+                            android:background="@drawable/bigbutton2"/>
+
+
+                    <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:layout_gravity="center_horizontal">
+                        <TableRow>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="今日运动目标"/>
+                            <EditText
+                                    android:id="@+id/movingTarget"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:hint="请输入数字"/>
+                        </TableRow>
+                        <TableRow>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="完成量"/>
+                            <TextView
+                                    android:id="@+id/completion"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"/>
+
+                        </TableRow>
+                        <TableRow>
+                            <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="体力感觉"/>
+                            <EditText
+                                    android:id="@+id/selfEvaluation"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:hint="请输入"/>
+
+                        </TableRow>
+                    </TableLayout>
+
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </TabHost>
+
+</LinearLayout>
