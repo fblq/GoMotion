@@ -3,14 +3,17 @@ package com.campus.gomotion.service;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import com.campus.gomotion.util.Cache;
+import com.campus.gomotion.util.CircularQueueUtil;
 import com.campus.gomotion.sensorData.Quaternion;
 import com.campus.gomotion.util.BasicConversionUtil;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Author: zhong.zhou
@@ -19,7 +22,8 @@ import java.util.concurrent.Callable;
  */
 public class SynchronizeService implements Callable<String> {
     private static final String TAG = "SynchronizeService";
-    public static Cache<Quaternion> minuteCache = new Cache<>(50);
+    //public static CircularQueueUtil<Quaternion> quaternionQueue = new CircularQueueUtil<>(50);
+    public static ArrayDeque<Quaternion> quaternions = new ArrayDeque<>();
     /**
      * the socket of service
      */
@@ -40,9 +44,7 @@ public class SynchronizeService implements Callable<String> {
 
     @Override
     public String call() {
-        String hexStr = "0123456789ABCDEF";
         Quaternion quaternion = new Quaternion();
-        //StringBuilder stringBuilder = new StringBuilder();
         byte[] data = new byte[16];
         try {
             inputStream = new DataInputStream(socket.getInputStream());
@@ -51,15 +53,15 @@ public class SynchronizeService implements Callable<String> {
                 quaternion.setX(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[6],data[7])));
                 quaternion.setY(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[8],data[9])));
                 quaternion.setZ(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[10],data[11])));
-                minuteCache.put(quaternion);
-               /* for (int i = 0; i < 16; i++) {
-                    stringBuilder.append("-").append(hexStr.charAt(data[i]>>4 & 0x0f)).append(hexStr.charAt(data[i] & 0x0f));
-                }*/
+                //quaternionQueue.put(quaternion);
+                quaternions.add(quaternion);
                 Message message = handler.obtainMessage();
                 message.what = 0x12;
                 message.obj = quaternion.toString();
                 handler.sendMessage(message);
-                //stringBuilder.delete(0, stringBuilder.length());
+                /*if(quaternionQueue.isFull()){
+                    quaternionQueue.clear();
+                }*/
                 Thread.sleep(20);
             }
         } catch (IOException e) {

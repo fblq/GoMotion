@@ -5,10 +5,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.View;
 import com.campus.gomotion.service.MotionStatisticService;
+import com.campus.gomotion.util.TypeConvertUtil;
 import org.achartengine.ChartFactory;
 import org.achartengine.chart.BarChart;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 
+import java.sql.Time;
 import java.util.*;
 
 /**
@@ -16,9 +18,9 @@ import java.util.*;
  * Date: 16/5/10
  * Email: muxin_zg@163.com
  */
-public class CaloriesChart extends AbstractDemoChart{
+public class CaloriesChart extends AbstractDemoChart {
     public String getName() {
-        return "calories bar chart";
+        return "bar chart";
     }
 
     /**
@@ -29,42 +31,45 @@ public class CaloriesChart extends AbstractDemoChart{
     public String getDesc() {
         return "The bar char for daily steps";
     }
+
     /**
-     * draw the chart of calories
+     * draw the chart of caloriesData
      *
      * @param context the context
      * @return View
      */
     public View execute(Context context) {
         String[] titles = new String[]{"卡路里"};
-        List<Date[]> xValues = new ArrayList<>();
+        List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
-        Map<Date, Double> caloriesMap = MotionStatisticService.calculateTotalCalories();
+        Map<Time, Double> caloriesMap = MotionStatisticService.calculateTotalCalories();
         int size = caloriesMap.size();
-        Date[] dates = new Date[size];
-        double[] steps = new double[size];
-        Iterator<Date> iterator = caloriesMap.keySet().iterator();
+        double[] time = new double[size];
+        double[] calories = new double[size];
+        Iterator<Time> iterator = caloriesMap.keySet().iterator();
         int i = 0;
         while (iterator.hasNext()) {
-            Date key = iterator.next();
+            Time key = iterator.next();
             Double value = caloriesMap.get(key);
-            dates[i] = key;
-            steps[i] = value;
+            time[i] = TypeConvertUtil.timeToDouble(key);
+            calories[i] = value;
             i++;
         }
-        xValues.add(dates);
-        yValues.add(steps);
+        xValues.add(time);
+        yValues.add(calories);
         int[] colors = new int[]{Color.BLUE};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
-        setChartSettings(renderer, "卡路里", "时间", "能耗(单位:cal)", 0, 24, 0, 1000, Color.GRAY, Color.LTGRAY);
-        renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
-        renderer.setXLabels(12);
+        renderer.setChartTitle("卡路里");
+        renderer.setChartTitleTextSize(60);
+        renderer.setXTitle("时间(hh:mm:ss)");
+        renderer.setYTitle("能耗(cal)");
+        renderer.setAxisTitleTextSize(40);
+        renderer.setLabelsColor(Color.GREEN);
+        renderer.setAxesColor(Color.BLUE);
+        renderer.setXLabels(48);
         renderer.setYLabels(10);
-        renderer.setXLabelsAlign(Paint.Align.CENTER);
-        renderer.setYLabelsAlign(Paint.Align.CENTER);
-        renderer.setPanEnabled(false, false);
-        renderer.setZoomRate(1.1f);
-        renderer.setBarSpacing(0.5f);
-        return ChartFactory.getBarChartView(context, buildDateDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
+        renderer.setYAxisMin(0);
+        renderer.setYAxisMax(100);
+        return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }

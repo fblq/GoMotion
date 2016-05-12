@@ -2,15 +2,21 @@ package com.campus.gomotion.activity;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.*;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
-import android.widget.*;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.TextView;
 import com.campus.gomotion.R;
 import com.campus.gomotion.constant.WifiApInfo;
 import com.campus.gomotion.service.MotionStatisticService;
 import com.campus.gomotion.service.PortListenerService;
 import com.campus.gomotion.service.SynchronizeService;
 import com.campus.gomotion.service.WifiApService;
+import org.w3c.dom.Text;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -20,30 +26,29 @@ import java.util.concurrent.FutureTask;
 
 /**
  * Author: zhong.zhou
- * Date: 16/5/9
+ * Date: 16/5/11
  * Email: muxin_zg@163.com
  */
-public class Connection extends Activity {
-    private final static String TAG = "Connection";
+public class ViewData extends Activity {
+    private static final String TAG = "ViewData";
+    private static boolean wifiSpotStatus = false;
+    private static boolean synchronizeStatus = false;
+    private MyHandler handler;
+    private TextView textView;
+
     private Context context = this;
     private Switch wifiSpotSwitch;
     private Switch synchronizeSwitch;
-    private TextView textView;
-    private Handler handler;
-    private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.connection);
+        setContentView(R.layout.data_view);
         wifiSpotSwitch = (Switch) this.findViewById(R.id.wifiSpotSwitch);
         synchronizeSwitch = (Switch) this.findViewById(R.id.synchronizeSwitch);
         textView = (TextView) this.findViewById(R.id.dataTextView);
-        /**
-         * start timer task
-         */
-        timer = new Timer(true);
-        setTimerTask();
+
+        handler = new MyHandler(getMainLooper());
         /**
          * wifi spot switch
          */
@@ -106,63 +111,48 @@ public class Connection extends Activity {
                 }
             }
         });
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Looper.prepare();
-                handler = new Handler(Looper.getMainLooper()) {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        if (textView.getLineCount() >= 20) {
-                            textView.setText("");
-                        }
-                        if (msg.what == 0x12) {
-                            textView.append("\n" + msg.obj.toString());
-                        }
-                    }
-                };
-                Looper.loop();
-            }
-        }).start();
     }
 
-    private void setTimerTask() {
-        final MotionStatisticService motionStatisticService = new MotionStatisticService();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                if(!SynchronizeService.minuteCache.isEmpty()){
-                    motionStatisticService.motionStatistic(SynchronizeService.minuteCache);
-                    SynchronizeService.minuteCache.clear();
-                }
-                Log.v(TAG, "timer task for counting motion");
-            }
-        };
-        TimerTask timerTask1 = new TimerTask() {
-            @Override
-            public void run() {
-                motionStatisticService.loadDataToCache();
-                /**
-                 * clear cache at 0:00:00 every day
-                 */
-                long t = System.currentTimeMillis();
-                if (t % (1000 * 60) == 0 && t % (1000 * 60 * 60) == 0 && t % (1000 * 60 * 60 * 24) == 0) {
-                    motionStatisticService.clearCache();
-                }
-                Log.v(TAG, "load data to cache");
-            }
-        };
-        timer.schedule(timerTask, 10000, 1000 * 60);
-        timer.schedule(timerTask1, 15000, 1000 * 60 * 15);
+    /**
+     * 用户按下Home键或Activity异常销毁时,用于保存任务的状态信息
+     * @param outState Bundle
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        timer.cancel();
-        if (timer != null) {
-            timer = null;
+    protected void onStop() {
+        super.onStop();
+        wifiSpotStatus = wifiSpotSwitch.isChecked();
+        synchronizeStatus = synchronizeSwitch.isChecked();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        wifiSpotSwitch.setChecked(wifiSpotStatus);
+        synchronizeSwitch.setChecked(synchronizeStatus);
+        Message message = handler.obtainMessage();
+        handler.handleMessage(message);
+    }
+
+    private class MyHandler extends Handler {
+        Looper looper;
+
+        MyHandler(Looper looper) {
+            this.looper = looper;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (textView.getLineCount() >= 20) {
+                textView.setText("");
+            }
+            if (msg.what == 0x12) {
+                textView.append("\n" + msg.obj.toString());
+            }
         }
     }
 }

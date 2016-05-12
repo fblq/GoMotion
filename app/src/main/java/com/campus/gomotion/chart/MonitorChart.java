@@ -6,10 +6,12 @@ import android.graphics.Paint;
 import android.view.View;
 import com.campus.gomotion.classification.Falling;
 import com.campus.gomotion.service.MotionStatisticService;
+import com.campus.gomotion.util.TypeConvertUtil;
 import org.achartengine.ChartFactory;
 import org.achartengine.chart.BarChart;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 
+import java.sql.Time;
 import java.util.*;
 
 /**
@@ -17,9 +19,9 @@ import java.util.*;
  * Date: 16/5/10
  * Email: muxin_zg@163.com
  */
-public class MonitorChart extends AbstractDemoChart{
+public class MonitorChart extends AbstractDemoChart {
     public String getName() {
-        return "monitor bar chart";
+        return "bar chart";
     }
 
     /**
@@ -30,42 +32,47 @@ public class MonitorChart extends AbstractDemoChart{
     public String getDesc() {
         return "The bar chart for daily monitoring";
     }
+
     /**
-     * draw the chart of monitor
+     * draw the chart of monitorDate
      *
      * @param context the context
      * @return View
      */
     public View execute(Context context) {
         String[] titles = new String[]{"跌倒监测"};
-        List<Date[]> xValues = new ArrayList<>();
+        List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
-        Map<Date, Falling> fallingMap = MotionStatisticService.fallingMap;
+        Map<Time, Falling> fallingMap = MotionStatisticService.fallingMap;
         int size = fallingMap.size();
-        Date[] dates = new Date[size];
-        double[] steps = new double[size];
-        Iterator<Date> iterator = fallingMap.keySet().iterator();
+        double[] time = new double[size];
+        double[] fallingCount = new double[size];
+        Iterator<Time> iterator = fallingMap.keySet().iterator();
         int i = 0;
         while (iterator.hasNext()) {
-            Date key = iterator.next();
+            Time key = iterator.next();
             double value = fallingMap.get(key).getCount();
-            dates[i] = key;
-            steps[i] = value;
+            time[i] = TypeConvertUtil.timeToDouble(key);
+            fallingCount[i] = value;
             i++;
         }
-        xValues.add(dates);
-        yValues.add(steps);
+        xValues.add(time);
+        yValues.add(fallingCount);
         int[] colors = new int[]{Color.BLUE};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
-        setChartSettings(renderer, "跌倒监测", "时间", "跌倒次数(单位:次)", 0, 24, 0, 50, Color.GRAY, Color.LTGRAY);
-        renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
-        renderer.setXLabels(12);
-        renderer.setYLabels(10);
-        renderer.setXLabelsAlign(Paint.Align.CENTER);
-        renderer.setYLabelsAlign(Paint.Align.CENTER);
-        renderer.setPanEnabled(false, false);
-        renderer.setZoomRate(1.1f);
-        renderer.setBarSpacing(0.5f);
-        return ChartFactory.getBarChartView(context, buildDateDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
+        renderer.setChartTitle("跌倒监测");
+        renderer.setChartTitleTextSize(60);
+        renderer.setXTitle("时间(hh:mm:ss)");
+        renderer.setYTitle("跌倒次数(次)");
+        renderer.setAxisTitleTextSize(40);
+        renderer.setLabelsColor(Color.GREEN);
+        renderer.setAxesColor(Color.BLUE);
+        renderer.setXLabels(24);
+        renderer.setXAxisMin(0);
+        renderer.setXAxisMax(12);
+        renderer.setYLabels(20);
+        renderer.setYAxisMin(0);
+        renderer.setYAxisMax(20);
+        return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }

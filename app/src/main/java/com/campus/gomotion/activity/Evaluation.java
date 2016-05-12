@@ -22,32 +22,14 @@ public class Evaluation extends Activity {
     private final static String TAG = "Evaluation";
     private TextView completion;
     private TextView selfEvaluation;
-    //private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.evaluation);
+        setContentView(R.layout.evaluation_chart);
         completion = (TextView) this.findViewById(R.id.completion);
         selfEvaluation = (TextView) this.findViewById(R.id.selfEvaluation);
-
-        /*timer = new Timer(true);
-        setTimerTask();*/
     }
-
-    /*public void setTimerTask() {
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                if (!MainActivity.target.isEmpty()) {
-                    completion.setText(String.valueOf((float) MotionStatisticService.calculateCompletion() / Float.parseFloat(MainActivity.target)));
-                }
-                selfEvaluation.setText(MainActivity.evaluation);
-                Log.v(TAG, "update the data of evaluation");
-            }
-        };
-        timer.schedule(timerTask, 10000, 1000 * 60 * 30);
-    }*/
 
     @Override
     protected void onStart() {
@@ -56,27 +38,6 @@ public class Evaluation extends Activity {
             completion.setText(String.valueOf((float) MotionStatisticService.calculateCompletion() / Float.parseFloat(MainActivity.target)));
         }
         selfEvaluation.setText(MainActivity.evaluation);
-        Log.v(TAG, "update the data of evaluation");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        //timer.cancel();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+        Log.v(TAG, "refresh data succeed");
     }
 }

@@ -19,7 +19,7 @@ import java.util.*;
  */
 public class EvaluateChart extends AbstractDemoChart {
     public String getName() {
-        return "evaluation bar chart";
+        return "bar chart";
     }
 
     /**
@@ -28,11 +28,11 @@ public class EvaluateChart extends AbstractDemoChart {
      * @return the chart description
      */
     public String getDesc() {
-        return "the bar chart for daily evaluation";
+        return "the bar chart for daily evaluationData";
     }
 
     /**
-     * draw the chart of evaluation
+     * draw the chart of evaluationData
      *
      * @param context the context
      * @return View
@@ -52,16 +52,19 @@ public class EvaluateChart extends AbstractDemoChart {
         }
         int[] colors = new int[]{Color.BLUE,Color.GRAY};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
-        setChartSettings(renderer, "评估", "时间", "分数(%)", 0, 6, 0, 200, Color.BLUE, Color.GRAY);
-        renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
-        renderer.getSeriesRendererAt(1).setDisplayChartValues(true);
-        renderer.setXLabels(12);
+        renderer.setChartTitle("评估");
+        renderer.setChartTitleTextSize(60);
+        renderer.setXTitle("时间(hh:mm:ss)");
+        renderer.setYTitle("分数(%)");
+        renderer.setAxisTitleTextSize(40);
+        renderer.setLabelsColor(Color.GREEN);
+        renderer.setAxesColor(Color.BLUE);
+        renderer.setXLabels(7);
+        renderer.setXAxisMin(0);
+        renderer.setXAxisMax(7);
         renderer.setYLabels(10);
-        renderer.setXLabelsAlign(Paint.Align.CENTER);
-        renderer.setYLabelsAlign(Paint.Align.CENTER);
-        renderer.setPanEnabled(false, false);
-        renderer.setZoomRate(1.1f);
-        renderer.setBarSpacing(0.5f);
+        renderer.setYAxisMin(0);
+        renderer.setYAxisMax(100);
         return ChartFactory.getBarChartView(context, buildBarDataset(titles, values), renderer, BarChart.Type.STACKED);
     }
 }

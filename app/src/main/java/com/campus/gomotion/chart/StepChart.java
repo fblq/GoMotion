@@ -5,17 +5,19 @@ import android.graphics.Color;
 import android.graphics.Paint.Align;
 import android.view.View;
 import com.campus.gomotion.service.MotionStatisticService;
+import com.campus.gomotion.util.TypeConvertUtil;
 import org.achartengine.ChartFactory;
 import org.achartengine.chart.BarChart;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 
+import java.sql.Time;
 import java.util.*;
 
 public class StepChart extends AbstractDemoChart {
 
 
     public String getName() {
-        return "step bar chart";
+        return " bar chart";
     }
 
     /**
@@ -35,34 +37,36 @@ public class StepChart extends AbstractDemoChart {
      */
     public View execute(Context context) {
         String[] titles = new String[]{"步数"};
-        List<Date[]> xValues = new ArrayList<>();
+        List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
-        Map<Date, Double> stepMap = MotionStatisticService.calculateTotalStep();
+        Map<Time, Double> stepMap = MotionStatisticService.calculateTotalStep();
         int size = stepMap.size();
-        Date[] dates = new Date[size];
+        double[] time = new double[size];
         double[] steps = new double[size];
-        Iterator<Date> iterator = stepMap.keySet().iterator();
+        Iterator<Time> iterator = stepMap.keySet().iterator();
         int i = 0;
         while (iterator.hasNext()) {
-            Date key = iterator.next();
+            Time key = iterator.next();
             Double value = stepMap.get(key);
-            dates[i] = key;
+            time[i] = TypeConvertUtil.timeToDouble(key);
             steps[i] = value;
             i++;
         }
-        xValues.add(dates);
+        xValues.add(time);
         yValues.add(steps);
         int[] colors = new int[]{Color.BLUE};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
-        setChartSettings(renderer, "总步数", "时间", "步数(单位:步)", 0, 24, 0, 24000, Color.GRAY, Color.LTGRAY);
-        renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
-        renderer.setXLabels(12);
-        renderer.setYLabels(10);
-        renderer.setXLabelsAlign(Align.CENTER);
-        renderer.setYLabelsAlign(Align.CENTER);
-        renderer.setPanEnabled(false, false);
-        renderer.setZoomRate(1.1f);
-        renderer.setBarSpacing(0.5f);
-        return ChartFactory.getBarChartView(context, buildDateDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
+        renderer.setChartTitle("总步数");
+        renderer.setChartTitleTextSize(60);
+        renderer.setXTitle("时间(hh:mm:ss)");
+        renderer.setYTitle("步数(步)");
+        renderer.setAxisTitleTextSize(40);
+        renderer.setLabelsColor(Color.GREEN);
+        renderer.setAxesColor(Color.BLUE);
+        renderer.setXLabels(24);
+        renderer.setYLabels(50);
+        renderer.setYAxisMin(0);
+        renderer.setYAxisMax(5000);
+        return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }

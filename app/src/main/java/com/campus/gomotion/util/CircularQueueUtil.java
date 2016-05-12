@@ -9,18 +9,18 @@ import java.util.Objects;
  * Date: 16/5/9
  * Email: muxin_zg@163.com
  */
-public class Cache<T> {
-    private final static String TAG = "";
+public class CircularQueueUtil<T> {
+    private final static String TAG = "CircularQueueUtil";
     private int front;
     private int tail;
     private int maxSize;
-    private Object[] cache;
+    private T[] cache;
 
-    public Cache(int size) {
+    public CircularQueueUtil(int size) {
         this.front = 0;
         this.tail = 0;
         this.maxSize = size;
-        cache = new Object[maxSize];
+        cache = (T[])new Object[maxSize];
     }
 
     public void put(T t) {
@@ -35,17 +35,17 @@ public class Cache<T> {
         if (front == tail) {
             throw new IndexOutOfBoundsException("cache empty exception");
         }
-        return (T) cache[tail];
+        return cache[tail-1];
     }
 
     public T front() {
         if (isEmpty()) {
             throw new IndexOutOfBoundsException("cache empty exception");
         }
-        return (T) cache[front];
+        return cache[front];
     }
 
-    public Object[] getCache() {
+    public T[] getCache() {
         return cache;
     }
 
@@ -57,14 +57,15 @@ public class Cache<T> {
         }
     }
 
+    public boolean isFull() {
+        return (getSize() == 50);
+    }
+
     public boolean isEmpty() {
         return (front == tail);
     }
 
     public void clear() {
-        if (isEmpty()) {
-            throw new IndexOutOfBoundsException("cache empty exception");
-        }
         front = tail = 0;
     }
 }

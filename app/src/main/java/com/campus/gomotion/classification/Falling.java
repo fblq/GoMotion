@@ -1,8 +1,5 @@
 package com.campus.gomotion.classification;
 
-import com.campus.gomotion.sensorData.AttitudeAngle;
-import com.campus.gomotion.util.Cache;
-
 /**
  * Author: zhong.zhou
  * Date: 16/4/24
@@ -10,6 +7,8 @@ import com.campus.gomotion.util.Cache;
  */
 public class Falling {
     private int count;
+
+    public Falling(){}
 
     public int getCount() {
         return count;

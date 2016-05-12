@@ -29,7 +29,6 @@ public class Movement extends Activity {
     private ArrayList<View> pageViews;
     private RadioGroup radioGroup;
     private RadioButton rb_one, rb_two;
-    //private Timer timer;
 
     private TextView walkTime;
     private TextView walkDistance;
@@ -43,7 +42,7 @@ public class Movement extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.moving);
+        setContentView(R.layout.movement_chart);
         radioGroup = (RadioGroup) findViewById(R.id.tab_group);
         rb_one = (RadioButton) findViewById(R.id.step);
         rb_two = (RadioButton) findViewById(R.id.calories);
@@ -58,15 +57,12 @@ public class Movement extends Activity {
         runSteps = (TextView) this.findViewById(R.id.runSteps);
         runCalorie = (TextView) this.findViewById(R.id.runCalorie);
 
-        /*timer = new Timer(true);
-        setTimerTask();
-*/
         viewpager = (ViewPager) findViewById(R.id.mainviewpager);
         LayoutInflater inflater = getLayoutInflater();
         pageViews = new ArrayList<>();
 
-        pageViews.add(inflater.inflate(R.layout.step, null));
-        pageViews.add(inflater.inflate(R.layout.calories, null));
+        pageViews.add(inflater.inflate(R.layout.step_chart, null));
+        pageViews.add(inflater.inflate(R.layout.calories_chart, null));
         viewPagerAdapter = new ViewPagerAdapter(pageViews);
         viewpager.setAdapter(viewPagerAdapter);
         viewpager.setOnPageChangeListener(new OnPageChangeListener() {
@@ -113,29 +109,6 @@ public class Movement extends Activity {
         });
     }
 
-    /*public void setTimerTask() {
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                if (MotionStatisticService.totalWalking != null) {
-                    walkTime.setText(String.valueOf(MotionStatisticService.totalWalking.getTime()));
-                    walkDistance.setText(String.valueOf(MotionStatisticService.totalWalking.getDistance()));
-                    walkSteps.setText(String.valueOf(MotionStatisticService.totalWalking.getStep()));
-                    walkCalories.setText(String.valueOf(MotionStatisticService.totalWalking.getEnergyConsumption()));
-                }
-                if (MotionStatisticService.totalRunning != null) {
-                    runTime.setText(String.valueOf(MotionStatisticService.totalRunning.getTime()));
-                    runDistance.setText(String.valueOf(MotionStatisticService.totalRunning.getDistance()));
-                    runSteps.setText(String.valueOf(MotionStatisticService.totalRunning.getStep()));
-                    runCalorie.setText(String.valueOf(MotionStatisticService.totalRunning.getEnergyConsumption()));
-
-                }
-                Log.v(TAG, "update data of movement");
-            }
-        };
-        timer.schedule(timerTask, 10000, 10000 * 60 * 30);
-    }
-*/
     @Override
     protected void onStart() {
         super.onStart();
@@ -152,7 +125,7 @@ public class Movement extends Activity {
             runCalorie.setText(String.valueOf(MotionStatisticService.totalRunning.getEnergyConsumption()));
 
         }
-        Log.v(TAG, "update data of movement");
+        Log.v(TAG, "refresh data succeed");
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {

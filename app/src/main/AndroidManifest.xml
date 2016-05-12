@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
 
     <application android:allowBackup="true"
                  android:label="@string/app_name"
@@ -18,7 +19,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".activity.Connection"/>
+
+        <activity android:name=".activity.ViewData"/>
         <activity android:name=".activity.Movement"/>
         <activity android:name=".activity.Monitor"/>
         <activity android:name=".activity.Evaluation"/>

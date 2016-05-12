@@ -84,7 +84,7 @@ public class PortListenerService implements Callable<String> {
                     if (futureTask.cancel(true)) {
                         Log.v(TAG, "cancel synchronize service succeed");
                     } else {
-                        Log.v(TAG, "cancel synchtonize service failed");
+                        Log.v(TAG, "cancel synchronize service failed");
                     }
                 }
             } catch (IOException e) {

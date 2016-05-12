@@ -11,6 +11,8 @@ public class Moving {
     private long step;
     private float energyConsumption;
 
+    public Moving(){}
+
     public Moving(float time, float distance, long step, float energyConsumption){
         this.time = time;
         this.distance = distance;

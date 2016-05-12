@@ -3,17 +3,17 @@ package com.campus.gomotion.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import com.campus.gomotion.R;
+import com.campus.gomotion.sensorData.Quaternion;
 import com.campus.gomotion.service.MotionStatisticService;
-import org.w3c.dom.Text;
+import com.campus.gomotion.service.SynchronizeService;
 
-import java.sql.Time;
+import java.util.ArrayDeque;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -22,18 +22,21 @@ import java.util.TimerTask;
  * Date: 16/4/21
  * Email: muxin_zg@163.com
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
     public static String target;
     public static String evaluation;
     public static String completions;
 
     private TabHost tabHost;
-    private ImageButton imageButton;
+    private Button communicationButton;
     private Button sportButton;
     private Button monitorButton;
     private Button assessButton;
-    //private Timer timer;
+    private Button synchronizationButton;
+    private Button dataViewButton;
+
+    private Timer timer;
 
     private TextView walkTime;
     private TextView walkDistance;
@@ -52,10 +55,13 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         tabHost = (TabHost) this.findViewById(R.id.tabhost);
-        imageButton = (ImageButton) this.findViewById(R.id.imageButton);
-        sportButton = (Button) this.findViewById(R.id.sportButton);
-        monitorButton = (Button) this.findViewById(R.id.monitorButton);
-        assessButton = (Button) this.findViewById(R.id.assessButton);
+        communicationButton = (Button) this.findViewById(R.id.communication);
+        sportButton = (Button) this.findViewById(R.id.sport);
+        monitorButton = (Button) this.findViewById(R.id.monitor);
+        assessButton = (Button) this.findViewById(R.id.assess);
+
+        synchronizationButton = (Button) this.findViewById(R.id.synchronization);
+        dataViewButton = (Button) this.findViewById(R.id.dataView);
 
         walkTime = (TextView) this.findViewById(R.id.walkTime);
         walkDistance = (TextView) this.findViewById(R.id.walkDistance);
@@ -69,100 +75,58 @@ public class MainActivity extends Activity {
         completion = (TextView) this.findViewById(R.id.completion);
         selfEvaluation = (EditText) this.findViewById(R.id.selfEvaluation);
 
-        TextView interval = (TextView)this.findViewById(R.id.interval);
-        /**
-         * start the timer task
-         */
-        /*timer = new Timer(true);
-        setTimerTask();
-*/
         /**
          * initial table host
          */
         tabHost.setup();
-        tabHost.addTab(tabHost.newTabSpec("tab1").setIndicator("moving", getResources().
+        tabHost.addTab(tabHost.newTabSpec("tab1").setIndicator("", getResources().
                 getDrawable(R.drawable.ic_accessibility_black_36dp)).setContent(R.id.view1));
-        tabHost.addTab(tabHost.newTabSpec("tb2").setIndicator("monitor", getResources().
+        tabHost.addTab(tabHost.newTabSpec("tb2").setIndicator("", getResources().
                 getDrawable(R.drawable.ic_alarm_add_black_36dp)).setContent(R.id.view2));
-        tabHost.addTab(tabHost.newTabSpec("tab3").setIndicator("evaluation", getResources().
+        tabHost.addTab(tabHost.newTabSpec("tab3").setIndicator("", getResources().
                 getDrawable(R.drawable.ic_assignment_black_36dp)).setContent(R.id.view3));
 
-        /**
-         * view the process of synchronizing data
-         */
-        imageButton.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, Connection.class);
-                startActivity(intent);
-            }
-        });
-        /**
-         * view the detail of moving
-         */
-        sportButton.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, Movement.class);
-                startActivity(intent);
-            }
-        });
+
+        communicationButton.setOnClickListener(this);
+        sportButton.setOnClickListener(this);
+        monitorButton.setOnClickListener(this);
+        assessButton.setOnClickListener(this);
 
         /**
-         * view the detail of monitor
+         * start timer task
          */
-        monitorButton.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, Monitor.class);
-                startActivity(intent);
-            }
-        });
-
-        /**
-         * view the detail of evaluation
-         */
-        assessButton.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(MainActivity.this, Evaluation.class);
-                startActivity(intent);
-            }
-        });
+        timer = new Timer(true);
+        setTimerTask();
     }
 
-   /* public void setTimerTask() {
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                if (MotionStatisticService.totalWalking != null) {
-                    walkTime.setText(String.valueOf(MotionStatisticService.totalWalking.getTime()));
-                    walkDistance.setText(String.valueOf(MotionStatisticService.totalWalking.getDistance()));
-                }
-                if (MotionStatisticService.totalRunning != null) {
-                    runTime.setText(String.valueOf(MotionStatisticService.totalRunning.getTime()));
-                    runDistance.setText(String.valueOf(MotionStatisticService.totalRunning.getDistance()));
-                }
-                fallingCount.setText(String.valueOf(MotionStatisticService.calculateFallingTotalCount()));
-                averageTime.setText(String.valueOf(MotionStatisticService.calculateAverageFallingTime()));
-
-                target = movingTarget.getText().toString();
-                if(!target.isEmpty()){
-                    completion.setText(String.valueOf((float) MotionStatisticService.calculateCompletion() / Float.parseFloat(target)));
-                }
-                completions = completion.getText().toString();
-                evaluation = selfEvaluation.getText().toString();
-
-                Log.v(TAG, "update data");
-            }
-        };
-        timer.schedule(timerTask, 10000, 1000 * 60 * 30);
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.communication:
+                Intent connectionIntent = new Intent();
+                connectionIntent.setClass(MainActivity.this, ViewData.class);
+                startActivity(connectionIntent);
+                break;
+            case R.id.sport:
+                Intent movementIntent = new Intent();
+                movementIntent.setClass(MainActivity.this, Movement.class);
+                startActivity(movementIntent);
+                break;
+            case R.id.monitor:
+                Intent monitorIntent = new Intent();
+                monitorIntent.setClass(MainActivity.this, Monitor.class);
+                startActivity(monitorIntent);
+                break;
+            case R.id.assess:
+                Intent evaluationIntent = new Intent();
+                evaluationIntent.setClass(MainActivity.this, Evaluation.class);
+                startActivity(evaluationIntent);
+                break;
+            default:
+                break;
+        }
     }
-*/
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -178,13 +142,59 @@ public class MainActivity extends Activity {
         averageTime.setText(String.valueOf(MotionStatisticService.calculateAverageFallingTime()));
 
         target = movingTarget.getText().toString();
-        if(!target.isEmpty()){
+        if (!target.isEmpty()) {
             completion.setText(String.valueOf((float) MotionStatisticService.calculateCompletion() / Float.parseFloat(target)));
         }
         completions = completion.getText().toString();
         evaluation = selfEvaluation.getText().toString();
+        Log.v(TAG, "refresh data succeed");
+    }
 
-        Log.v(TAG, "update data");
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        timer.cancel();
+        if (timer != null) {
+            timer = null;
+        }
+    }
+
+    private void setTimerTask() {
+        final MotionStatisticService motionStatisticService
+                = new MotionStatisticService();
+        /**
+         * time interval is 1s
+         */
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                if (SynchronizeService.quaternions.size() >= 50) {
+                    ArrayDeque<Quaternion> quaternions = SynchronizeService.quaternions;
+                    motionStatisticService.motionStatistic(quaternions);
+                    SynchronizeService.quaternions.clear();
+                }
+                Log.v(TAG, "timer task for counting motion");
+            }
+        };
+        /**
+         * time interval is one minute
+         */
+        TimerTask timerTask1 = new TimerTask() {
+            @Override
+            public void run() {
+                motionStatisticService.loadDataToCache();
+                /**
+                 * clear cache at 0:00:00 every day
+                 */
+                long t = System.currentTimeMillis();
+                if (t % (1000 * 60) == 0 && t % (1000 * 60 * 60) == 0 && t % (1000 * 60 * 60 * 24) == 0) {
+                    motionStatisticService.clearCache();
+                }
+                Log.v(TAG, "load data to cache");
+            }
+        };
+        timer.schedule(timerTask, 10000, 1000);
+        timer.schedule(timerTask1, 15000, 1000 * 60);
     }
 
     @Override

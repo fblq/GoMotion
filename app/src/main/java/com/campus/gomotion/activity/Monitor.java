@@ -21,57 +21,27 @@ import java.util.*;
 public class Monitor extends Activity {
     private static final String TAG = "Monitor";
     private Context context;
-    private TextView fallingCount;
+    private TextView fallingTime;
     private TextView interval;
     private TableLayout tableLayout;
-
-    //private Timer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.monitor);
-        fallingCount = (TextView) this.findViewById(R.id.fallingCount);
+        setContentView(R.layout.monitor_chart);
+        fallingTime = (TextView) this.findViewById(R.id.fallingTime);
         interval = (TextView) this.findViewById(R.id.interval);
         tableLayout = (TableLayout) this.findViewById(R.id.fallingDetail);
         context = this;
-        /*timer = new Timer(true);
-        setTimerTask();*/
     }
 
-   /* public void setTimerTask(){
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                Map<Time, Float> fallingLog = MotionStatisticService.fallingLog;
-                if(fallingLog != null){
-                    Iterator<Time> iterator = fallingLog.keySet().iterator();
-                    while(iterator.hasNext()){
-                        Time key = iterator.next();
-                        Float value = fallingLog.get(key);
-                        TableRow tableRow = new TableRow(context);
-                        TextView textView = new TextView(context);
-                        TextView textView1 = new TextView(context);
-                        textView.setText(String.valueOf(key));
-                        textView1.setText(String.valueOf(value));
-                        tableRow.addView(textView);
-                        tableRow.addView(textView1);
-                        tableLayout.addView(tableRow);
-                    }
-                }
-                Log.v(TAG,"update the data of monitor");
-            }
-        };
-        timer.schedule(timerTask,10000,1000*60*30);
-    }
-*/
     @Override
     protected void onStart() {
         super.onStart();
         Map<Time, Float> fallingLog = MotionStatisticService.fallingLog;
-        if(fallingLog != null){
+        if (fallingLog != null) {
             Iterator<Time> iterator = fallingLog.keySet().iterator();
-            while(iterator.hasNext()){
+            while (iterator.hasNext()) {
                 Time key = iterator.next();
                 Float value = fallingLog.get(key);
                 TableRow tableRow = new TableRow(context);
@@ -84,6 +54,6 @@ public class Monitor extends Activity {
                 tableLayout.addView(tableRow);
             }
         }
-        Log.v(TAG,"update the data of monitor");
+        Log.v(TAG, "refresh data succeed");
     }
 }
