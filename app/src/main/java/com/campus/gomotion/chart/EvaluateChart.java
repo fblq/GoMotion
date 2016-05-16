@@ -38,19 +38,22 @@ public class EvaluateChart extends AbstractDemoChart {
      * @return View
      */
     public View execute(Context context) {
-        String[] titles = new String[]{"完成量","体力感觉"};
-        List<double[]> values = new ArrayList<>();
-        if(MainActivity.completions!=null && !MainActivity.completions.isEmpty()){
-            values.add(new double[]{Double.parseDouble(MainActivity.completions)});
-        }else{
-            values.add(new double[]{100});
+        String[] titles = new String[]{"完成量", "体力感觉"};
+        List<double[]> xValues = new ArrayList<>();
+        xValues.add(new double[]{2, 4, 6});
+        xValues.add(new double[]{2, 4, 6});
+        List<double[]> yValues = new ArrayList<>();
+        if (MainActivity.completions != null && !MainActivity.completions.isEmpty()) {
+            yValues.add(new double[]{Double.parseDouble(MainActivity.completions + 50), 0, 0});
+        } else {
+            yValues.add(new double[]{100, 0, 0});
         }
-        if(MainActivity.evaluation!=null && !MainActivity.evaluation.isEmpty()){
-            values.add(new double[]{Double.parseDouble(MainActivity.evaluation)});
-        }else{
-            values.add(new double[]{100});
+        if (MainActivity.evaluation != null && !MainActivity.evaluation.isEmpty()) {
+            yValues.add(new double[]{0, 0, Double.parseDouble(MainActivity.evaluation)});
+        } else {
+            yValues.add(new double[]{0, 0, 100});
         }
-        int[] colors = new int[]{Color.BLUE,Color.GRAY};
+        int[] colors = new int[]{Color.BLUE, Color.GRAY};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
         renderer.setChartTitle("评估");
         renderer.setChartTitleTextSize(60);
@@ -59,12 +62,12 @@ public class EvaluateChart extends AbstractDemoChart {
         renderer.setAxisTitleTextSize(40);
         renderer.setLabelsColor(Color.GREEN);
         renderer.setAxesColor(Color.BLUE);
-        renderer.setXLabels(7);
+        renderer.setXLabels(8);
         renderer.setXAxisMin(0);
-        renderer.setXAxisMax(7);
+        renderer.setXAxisMax(8);
         renderer.setYLabels(10);
         renderer.setYAxisMin(0);
         renderer.setYAxisMax(100);
-        return ChartFactory.getBarChartView(context, buildBarDataset(titles, values), renderer, BarChart.Type.STACKED);
+        return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }

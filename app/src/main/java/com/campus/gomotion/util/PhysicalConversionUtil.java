@@ -21,9 +21,9 @@ public class PhysicalConversionUtil {
         float x = quaternion.getX();
         float y = quaternion.getY();
         float z = quaternion.getZ();
-        attitudeAngle.setYaw((float) Math.atan2(2 * w * z + 2 * x * y, 1 - 2 * y * y - 2 * z * z));
-        attitudeAngle.setPitch((float) Math.asin(2 * w * y - 2 * z * x));
-        attitudeAngle.setRoll((float) Math.atan2(2 * w * x + 2 * y * z, 1 - 2 * x * x - 2 * y * y));
+        attitudeAngle.setYaw((float) Math.atan2(2 * w * z + 2 * x * y, 1 - 2 * y * y - 2 * z * z)*(float) (180 / 3.1415));
+        attitudeAngle.setPitch((float) Math.asin(2 * w * y - 2 * z * x)*(float) (180 / 3.1415));
+        attitudeAngle.setRoll((float) Math.atan2(2 * w * x + 2 * y * z, 1 - 2 * x * x - 2 * y * y)*(float) (180 / 3.1415));
         return attitudeAngle;
     }
 

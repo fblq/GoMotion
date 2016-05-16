@@ -64,9 +64,11 @@ public class StepChart extends AbstractDemoChart {
         renderer.setLabelsColor(Color.GREEN);
         renderer.setAxesColor(Color.BLUE);
         renderer.setXLabels(24);
-        renderer.setYLabels(50);
+        renderer.setXAxisMin(0);
+        renderer.setXAxisMax(12);
+        renderer.setYLabels(10);
         renderer.setYAxisMin(0);
-        renderer.setYAxisMax(5000);
+        renderer.setYAxisMax(1000);
         return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }

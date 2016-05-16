@@ -45,4 +45,10 @@ public class AttitudeAngle {
     public void setYaw(float yaw) {
         this.yaw = yaw;
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder().append(yaw)
+                .append(pitch).append(roll).toString();
+    }
 }
