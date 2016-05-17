@@ -9,13 +9,24 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import com.campus.gomotion.R;
+import com.campus.gomotion.sensorData.AttitudeAngle;
 import com.campus.gomotion.sensorData.Quaternion;
 import com.campus.gomotion.service.MotionStatisticService;
 import com.campus.gomotion.service.SynchronizeService;
+import com.campus.gomotion.util.FileUtil;
+import com.campus.gomotion.util.PhysicalConversionUtil;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayDeque;
+import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Author: zhong.zhou
@@ -24,6 +35,10 @@ import java.util.TimerTask;
  */
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
+
+    //private static String file = "/data/data/com.campus.gomotion/myFile.txt";
+    private static String file ="/storage/emulated/0/amotion/er.txt";
+
     public static String target;
     public static String evaluation;
     public static String completions;
@@ -120,6 +135,49 @@ public class MainActivity extends Activity implements View.OnClickListener {
          */
         timer = new Timer(true);
         setTimerTask();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                FileWriter fileWriter = null;
+                PrintWriter printWriter = null;
+                MotionStatisticService motionStatisticService = new MotionStatisticService();
+                try {
+                    fileWriter = new FileWriter(file);
+                    printWriter = new PrintWriter(fileWriter);
+                    while (true) {
+                        ArrayDeque<Quaternion> quaternions = SynchronizeService.quaternions.takeAll();
+                        for(Quaternion quaternion:quaternions){
+                            AttitudeAngle attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(quaternion);
+                            float v = PhysicalConversionUtil.calculateGeometricMeanAcceleration(attitudeAngle);
+                            printWriter.print("侧偏角:");
+                            printWriter.println(attitudeAngle.getYaw());
+                            printWriter.print("俯仰角:");
+                            printWriter.println(attitudeAngle.getPitch());
+                            printWriter.print("横滚角:");
+                            printWriter.println(attitudeAngle.getRoll());
+                            printWriter.print("加速度几何均值:");
+                            printWriter.println(v);
+
+                        }
+                        motionStatisticService.motionStatistic(quaternions);
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, e.getMessage());
+                }finally {
+                    try{
+                        if(printWriter!=null){
+                            printWriter.close();
+                        }
+                        if(fileWriter!=null){
+                            fileWriter.close();
+                        }
+                    }catch (IOException e){
+                        Log.d(TAG,e.getMessage());
+                    }
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -174,6 +232,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        completions = completion.getText().toString();
+        evaluation = selfEvaluation.getText().toString();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         timer.cancel();
@@ -188,17 +253,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
         /**
          * time interval is 1s
          */
-        TimerTask timerTask = new TimerTask() {
+       /* TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
                 if (SynchronizeService.quaternions.size() >= 50) {
-                    ArrayDeque<Quaternion> quaternions = SynchronizeService.quaternions;
+                    CopyOnWriteArrayList<Quaternion> quaternions = SynchronizeService.quaternions;
                     motionStatisticService.motionStatistic(quaternions);
                     SynchronizeService.quaternions.clear();
                 }
                 Log.v(TAG, "timer task for counting motion");
             }
-        };
+        };*/
         /**
          * time interval is one minute
          */
@@ -216,7 +281,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Log.v(TAG, "load data to cache");
             }
         };
-        timer.schedule(timerTask, 10000, 1000);
+        //timer.schedule(timerTask, 10000, 1000);
         timer.schedule(timerTask1, 15000, 1000 * 60);
     }
 

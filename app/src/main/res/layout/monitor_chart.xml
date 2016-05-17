@@ -26,19 +26,6 @@
                     android:layout_height="wrap_content"
                     android:text="@string/interval"/>
         </TableRow>
-
-        <TableRow>
-            <TextView
-                    android:id="@+id/fallingTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"/>
-            <TextView
-                    android:id="@+id/interval"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"/>
-        </TableRow>
     </TableLayout>
 
 </LinearLayout>

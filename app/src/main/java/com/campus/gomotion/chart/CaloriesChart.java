@@ -66,7 +66,9 @@ public class CaloriesChart extends AbstractDemoChart {
         renderer.setAxisTitleTextSize(40);
         renderer.setLabelsColor(Color.GREEN);
         renderer.setAxesColor(Color.BLUE);
-        renderer.setXLabels(48);
+        renderer.setXLabels(24);
+        renderer.setXAxisMin(0);
+        renderer.setXAxisMax(12);
         renderer.setYLabels(10);
         renderer.setYAxisMin(0);
         renderer.setYAxisMax(100);

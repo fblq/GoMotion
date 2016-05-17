@@ -1,15 +1,20 @@
 package com.campus.gomotion.service;
 
+import android.content.Context;
 import com.campus.gomotion.classification.Falling;
 import com.campus.gomotion.classification.Moving;
 import com.campus.gomotion.sensorData.AttitudeAngle;
 import com.campus.gomotion.sensorData.Quaternion;
+import com.campus.gomotion.util.CacheUtil;
 import com.campus.gomotion.util.CircularQueueUtil;
 import com.campus.gomotion.util.PhysicalConversionUtil;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Author: zhong.zhou
@@ -92,9 +97,9 @@ public class MotionStatisticService {
         return flag;
     }
 
-    public void motionStatistic(ArrayDeque<Quaternion> quaternionQueue) {
-        Quaternion tailQuaternion = quaternionQueue.getLast();
-        Quaternion frontQuaternion = quaternionQueue.getFirst();
+    public void motionStatistic(ArrayDeque<Quaternion> quaternions) {
+        Quaternion tailQuaternion = quaternions.getLast();
+        Quaternion frontQuaternion = quaternions.getFirst();
         AttitudeAngle tailAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(tailQuaternion);
         AttitudeAngle frontAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(frontQuaternion);
         float tailAcceleration = PhysicalConversionUtil.calculateGeometricMeanAcceleration(tailAttitudeAngle);
@@ -111,8 +116,8 @@ public class MotionStatisticService {
         /**
          * 跌倒情况
          */
-        if (frontYaw > 30 || frontYaw < 30 || frontPitch > 45 || frontPitch < -30) {
-            if (tailYaw > 30 || tailYaw < 30 || tailPitch > 45 || tailPitch < -30) {
+        if (frontYaw > 30 || frontYaw < -30 || frontPitch > 45 || frontPitch < -30) {
+            if (tailYaw > 30 || tailYaw < -30 || tailPitch > 45 || tailPitch < -30) {
                 falling.increase();
                 /**
                  * 获得系统时间并计时,更新fallingLog
@@ -125,11 +130,11 @@ public class MotionStatisticService {
                 }
             }
         }
-        float averageAcceleration = averageAcceleration(quaternionQueue);
+        float averageAcceleration = averageAcceleration(quaternions);
         /**
          * 不是跌倒的状态下,找到极值后进行计算并判断情况
          */
-        for (Quaternion quaternion : quaternionQueue) {
+        for (Quaternion quaternion : quaternions) {
             if (upTimeExtremum(quaternion)) {
                 /**
                  * 依据一分钟内的加速度几何均值的平均值判断行走和跑步两种状态
@@ -201,15 +206,15 @@ public class MotionStatisticService {
     /**
      * caculate the average of acceleration in one minute
      *
-     * @param quaternionQueue ArrayDeque<Quaternion>
+     * @param quaternions Quaternion[]
      * @return float
      */
-    private float averageAcceleration(ArrayDeque<Quaternion> quaternionQueue) {
+    private float averageAcceleration(ArrayDeque<Quaternion> quaternions) {
         float sum = 0, i = 0;
         AttitudeAngle attitudeAngle;
         Float acceleration;
-        i = quaternionQueue.size();
-        for (Quaternion quaternion: quaternionQueue){
+        i = quaternions.size();
+        for (Quaternion quaternion : quaternions) {
             attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(quaternion);
             acceleration = PhysicalConversionUtil.calculateGeometricMeanAcceleration(attitudeAngle);
             sum += acceleration;

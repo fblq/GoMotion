@@ -12,14 +12,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import com.campus.gomotion.R;
 import com.campus.gomotion.constant.WifiApInfo;
-import com.campus.gomotion.service.MotionStatisticService;
 import com.campus.gomotion.service.PortListenerService;
-import com.campus.gomotion.service.SynchronizeService;
 import com.campus.gomotion.service.WifiApService;
-import org.w3c.dom.Text;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
