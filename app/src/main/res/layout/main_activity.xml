@@ -3,42 +3,8 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:background="#7F7F7F"
-              tools:context=".MainActivity">
-    <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/headbackground">
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="GoMotion"
-                android:textSize="50px"
-                android:id="@+id/textView" android:layout_alignTop="@+id/synchronization"/>
-        <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="数据同步"
-                android:id="@+id/synchronization"
-                android:checked="false"
-                android:layout_centerVertical="true" android:layout_toRightOf="@+id/textView"
-                android:layout_toEndOf="@+id/textView"/>
-        <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="查看数据"
-                android:id="@+id/dataView"
-                android:checked="false"
-                android:layout_centerVertical="true" android:layout_toRightOf="@+id/synchronization"
-                android:layout_toEndOf="@+id/synchronization"/>
-        <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="热点通信"
-                android:id="@+id/communication"
-                android:layout_centerVertical="true" android:layout_toRightOf="@+id/dataView"
-                android:layout_toEndOf="@+id/dataView"/>
-    </RelativeLayout>
+              android:background="@drawable/sportbg"
+              tools:context=".activity.MainActivity">
     <TabHost
             android:id="@+id/tabhost"
             android:layout_width="match_parent"
@@ -54,201 +20,65 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
             </TabWidget>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+               >
 
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="数据同步"
+                    android:id="@+id/synchronization"
+                    android:checked="false"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="0dp"
+                    />
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="查看数据"
+                    android:id="@+id/dataView"
+                    android:checked="false"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/synchronization"
+                    android:layout_toEndOf="@+id/synchronization"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="热点通信"
+                    android:id="@+id/communication"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/dataView"
+                    android:layout_toEndOf="@+id/dataView"
+                    android:layout_marginRight="0dp"
+                    />
+            </RelativeLayout>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/setnum"
+                android:inputType="number"
+                android:hint="@string/inputstepnumbei"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/setnumbutton"
+                android:text="@string/setstepnumber" />
             <FrameLayout
                     android:id="@android:id/tabcontent"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
                 <!-- 第一个布局 -->
-                <LinearLayout
-                        android:id="@+id/view1"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical" android:layout_gravity="right|top">
-
-                    <Button
-                            android:id="@+id/sport"
-                            android:layout_width="220dp"
-                            android:layout_height="220dp"
-                            android:layout_marginLeft="65dp"
-                            android:layout_marginTop="0dp"
-                            android:text="运动"
-                            android:textSize="50sp"
-                            android:background="@drawable/bigbutton2" android:allowUndo="false"/>
-                    <TextView
-                            android:id="@+id/textView1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="          你今天好像还没运动，快动起来吧！！！"
-                            android:textColor="#FF0000"
-                            android:textSize="15sp"/>
-
-                    <TableLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal">
-                        <TableRow>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="类别	"/>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="时间(hh:mm)"/>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="距离(m)"/>
-                        </TableRow>
-                        <TableRow>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="步行	"/>
-                            <TextView
-                                    android:id="@+id/walkTime"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0"/>
-                            <TextView
-                                    android:id="@+id/walkDistance"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0"/>
-                        </TableRow>
-                        <TableRow>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="跑步	"/>
-                            <TextView
-                                    android:id="@+id/runTime"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0"/>
-                            <TextView
-                                    android:id="@+id/runDistance"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0"/>
-                        </TableRow>
-                    </TableLayout>
-
-                </LinearLayout>
+                <include android:id="@+id/view1"
+                    layout="@layout/view1"/>
                 <!-- 第二个布局 -->
-                <LinearLayout
-                        android:id="@+id/view2"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical">
-
-                    <Button
-                            android:id="@+id/monitor"
-                            android:layout_width="220dp"
-                            android:layout_height="220dp"
-                            android:layout_marginLeft="65dp"
-                            android:layout_marginTop="0dp"
-                            android:text="监测"
-                            android:textSize="50sp"
-                            android:background="@drawable/bigbutton2"/>
-
-
-                    <TableLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal">
-                        <TableRow>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="跌倒总次数"/>
-                            <TextView
-                                    android:id="@+id/fallingCount"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0"/>
-
-                        </TableRow>
-                        <TableRow>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="平均耗时"/>
-                            <TextView
-                                    android:id="@+id/averageTime"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0"/>
-                        </TableRow>
-                    </TableLayout>
-
-                </LinearLayout>
-
+                <include android:id="@+id/view2"
+                    layout="@layout/view2"/>
                 <!-- 第三个tab的布局 -->
-                <LinearLayout
-                        android:id="@+id/view3"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical">
-
-                    <Button
-                            android:id="@+id/assess"
-                            android:layout_width="220dp"
-                            android:layout_height="220dp"
-                            android:layout_marginLeft="65dp"
-                            android:layout_marginTop="0dp"
-                            android:text="评分"
-                            android:textSize="50sp"
-                            android:background="@drawable/bigbutton2"/>
-
-
-                    <TableLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-
-                            android:layout_gravity="center_horizontal">
-                        <TableRow>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="今日运动目标"/>
-                            <EditText
-                                    android:id="@+id/movingTarget"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:inputType="number"
-                                    android:hint="请输入数字"/>
-                        </TableRow>
-                        <TableRow>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="完成量"/>
-                            <TextView
-                                    android:id="@+id/completion"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="0"/>
-
-                        </TableRow>
-                        <TableRow>
-                            <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="体力感觉"/>
-                            <EditText
-                                    android:id="@+id/selfEvaluation"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:inputType="number"
-                                    android:hint="请输入"/>
-
-                        </TableRow>
-                    </TableLayout>
-
-                </LinearLayout>
+                <include android:id="@+id/view3"
+                    layout="@layout/view3"/>
             </FrameLayout>
         </LinearLayout>
     </TabHost>

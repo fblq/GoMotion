@@ -66,10 +66,33 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView completion;
     private EditText selfEvaluation;
 
+    private CircleBar circleBar;
+    private EditText setnum;
+    private Button setnumbutton;
+    int i = 0;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
+        circleBar = (CircleBar) findViewById(R.id.circle);
+        setnum = (EditText) findViewById(R.id.setnum);
+        setnumbutton = (Button) findViewById(R.id.setnumbutton);
+        circleBar.setMaxstepnumber(10000);//在此处设置目标步数
+        setnumbutton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                /**
+                 * 点击设置步数
+                 */
+                circleBar.update(Integer.parseInt(setnum.getText().toString()),
+                        700);
+            }
+        });
+
         tabHost = (TabHost) this.findViewById(R.id.tabhost);
         communicationButton = (Button) this.findViewById(R.id.communication);
         sportButton = (Button) this.findViewById(R.id.sport);
@@ -96,11 +119,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
          */
         tabHost.setup();
         tabHost.addTab(tabHost.newTabSpec("tab1").setIndicator("", getResources().
-                getDrawable(R.drawable.ic_accessibility_black_36dp)).setContent(R.id.view1));
+                getDrawable(R.drawable.sport00)).setContent(R.id.view1));
         tabHost.addTab(tabHost.newTabSpec("tb2").setIndicator("", getResources().
-                getDrawable(R.drawable.ic_alarm_add_black_36dp)).setContent(R.id.view2));
+                getDrawable(R.drawable.kid5)).setContent(R.id.view2));
         tabHost.addTab(tabHost.newTabSpec("tab3").setIndicator("", getResources().
-                getDrawable(R.drawable.ic_assignment_black_36dp)).setContent(R.id.view3));
+                getDrawable(R.drawable.note)).setContent(R.id.view3));
 
 
         communicationButton.setOnClickListener(this);
