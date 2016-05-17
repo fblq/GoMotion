@@ -29,8 +29,6 @@ public class Monitor extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.monitor_chart);
-        fallingTime = (TextView) this.findViewById(R.id.fallingTime);
-        interval = (TextView) this.findViewById(R.id.interval);
         tableLayout = (TableLayout) this.findViewById(R.id.fallingDetail);
         context = this;
     }
