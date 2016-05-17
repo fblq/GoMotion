@@ -1,19 +1,30 @@
-package com.campus.gomotion.classification;
+package com.campus.gomotion.kind;
+
+import java.io.Serializable;
 
 /**
  * Author: zhong.zhou
  * Date: 16/4/24
  * Email: muxin_zg@163.com
  */
-public class Moving {
+public class Moving implements Serializable {
+    private static final long serialVersionUID = 8090854784395801378L;
     private float time;
     private float distance;
     private long step;
     private float energyConsumption;
 
-    public Moving(){}
+    public Moving() {
+    }
 
-    public Moving(float time, float distance, long step, float energyConsumption){
+    public Moving(Moving moving) {
+        this.time = moving.getTime();
+        this.distance = moving.getDistance();
+        this.step = moving.getStep();
+        this.energyConsumption = moving.getEnergyConsumption();
+    }
+
+    public Moving(float time, float distance, long step, float energyConsumption) {
         this.time = time;
         this.distance = distance;
         this.step = step;
@@ -52,17 +63,19 @@ public class Moving {
         this.time = time;
     }
 
-    public void clear(){
+    public void clear() {
         this.time = 0;
         this.distance = 0;
         this.step = 0;
         this.energyConsumption = 0;
     }
 
-    public void add(Moving moving){
-        this.time += moving.getTime();
-        this.distance += moving.getDistance();
-        this.step += moving.getStep();
-        this.energyConsumption += moving.getEnergyConsumption();
+    public void add(Moving moving) {
+        if (moving != null) {
+            this.time += moving.getTime();
+            this.distance += moving.getDistance();
+            this.step += moving.getStep();
+            this.energyConsumption += moving.getEnergyConsumption();
+        }
     }
 }

@@ -1,20 +1,14 @@
 package com.campus.gomotion.service;
 
-import android.content.Context;
-import com.campus.gomotion.classification.Falling;
-import com.campus.gomotion.classification.Moving;
+import com.campus.gomotion.kind.Falling;
+import com.campus.gomotion.kind.Moving;
 import com.campus.gomotion.sensorData.AttitudeAngle;
+import com.campus.gomotion.sensorData.DataPack;
 import com.campus.gomotion.sensorData.Quaternion;
-import com.campus.gomotion.util.CacheUtil;
-import com.campus.gomotion.util.CircularQueueUtil;
 import com.campus.gomotion.util.PhysicalConversionUtil;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.sql.Time;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Author: zhong.zhou
@@ -26,16 +20,16 @@ public class MotionStatisticService {
     public static Map<Time, Falling> fallingMap = new HashMap<>();
     public static Map<Time, Moving> walkingMap = new HashMap<>();
     public static Map<Time, Moving> runningMap = new HashMap<>();
+
     public static Map<Time, Float> fallingLog = new HashMap<>();
     public static Moving totalRunning;
     public static Moving totalWalking;
-
     /**
      * 存储小段时间内的数据(当前间隔:1分钟)
      */
-    private static Falling falling;
-    private static Moving running;
-    private static Moving walking;
+    private Falling falling;
+    private Moving running;
+    private Moving walking;
 
     /**
      * 寻找极值点的辅助变量
@@ -75,12 +69,12 @@ public class MotionStatisticService {
     /**
      * upTime the extremum of acceleration geometric mean
      *
-     * @param quaternion Quaternion
+     * @param dataPack DataPack
      * @return boolean
      */
-    private boolean upTimeExtremum(Quaternion quaternion) {
+    private boolean updateExtremum(DataPack dataPack) {
         boolean flag = false;
-        AttitudeAngle attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(quaternion);
+        AttitudeAngle attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(dataPack.getQuaternion());
         float temp = PhysicalConversionUtil.calculateGeometricMeanAcceleration(attitudeAngle);
         if (interPoint < endPoint && interPoint < temp) {
             accelerationMin = interPoint;
@@ -97,9 +91,9 @@ public class MotionStatisticService {
         return flag;
     }
 
-    public void motionStatistic(ArrayDeque<Quaternion> quaternions) {
-        Quaternion tailQuaternion = quaternions.getLast();
-        Quaternion frontQuaternion = quaternions.getFirst();
+    public void motionStatistic(ArrayDeque<DataPack> dataPacks) {
+        Quaternion tailQuaternion = dataPacks.getLast().getQuaternion();
+        Quaternion frontQuaternion = dataPacks.getFirst().getQuaternion();
         AttitudeAngle tailAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(tailQuaternion);
         AttitudeAngle frontAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(frontQuaternion);
         float tailAcceleration = PhysicalConversionUtil.calculateGeometricMeanAcceleration(tailAttitudeAngle);
@@ -110,9 +104,6 @@ public class MotionStatisticService {
         float frontYaw = frontAttitudeAngle.getYaw();
         float frontPitch = frontAttitudeAngle.getPitch();
         float frontRoll = frontAttitudeAngle.getRoll();
-        /**
-         * 排除静止的情况
-         */
         /**
          * 跌倒情况
          */
@@ -130,12 +121,28 @@ public class MotionStatisticService {
                 }
             }
         }
-        float averageAcceleration = averageAcceleration(quaternions);
+        /**
+         * 正常行走/静止情况
+         */
+        if (frontYaw > -10 && frontYaw < 10 && frontPitch > -10 && frontPitch < 10) {
+            if (tailYaw > -10 && tailYaw < 10 && tailYaw > -10 && tailYaw < 10) {
+
+            }
+        }
+        /**
+         * 正常跑步情况
+         */
+        if ((frontYaw > 10 && frontYaw < 30) || (frontYaw > -30 && frontYaw < -10) || (frontPitch > 10 && frontPitch < 45) || (frontPitch > -30 && frontPitch < -10)) {
+            if ((tailYaw > 10 && tailYaw < 30) || (tailYaw > -30 && tailYaw < -10) || (tailPitch > 10 && tailPitch < 45) || (tailPitch > -30 && tailPitch < -10)) {
+
+            }
+        }
+        float averageAcceleration = averageAcceleration(dataPacks);
         /**
          * 不是跌倒的状态下,找到极值后进行计算并判断情况
          */
-        for (Quaternion quaternion : quaternions) {
-            if (upTimeExtremum(quaternion)) {
+        for (DataPack dataPack : dataPacks) {
+            if (updateExtremum(dataPack)) {
                 /**
                  * 依据一分钟内的加速度几何均值的平均值判断行走和跑步两种状态
                  */
@@ -143,6 +150,9 @@ public class MotionStatisticService {
                 float time = calculateTime(t);
                 float distance = calculateDistance(temp, time);
                 long step = calculateStep(stepCount);
+                /**
+                 * 76为用户体重(单位:kg)
+                 */
                 float energyConsumption = calculateEnergyConsumption(76, time);
                 Moving moving = new Moving(time, distance, step, energyConsumption);
                 /**
@@ -169,15 +179,18 @@ public class MotionStatisticService {
         long t = System.currentTimeMillis() - 60 * 1000;
         Time time = new Time(t);
         if (falling != null) {
-            fallingMap.put(time, falling);
+            Falling temp = new Falling(falling);
+            fallingMap.put(time, temp);
             falling.clear();
         }
         if (running != null) {
-            runningMap.put(time, running);
+            Moving temp = new Moving(running);
+            runningMap.put(time, temp);
             running.clear();
         }
         if (walking != null) {
-            walkingMap.put(time, walking);
+            Moving temp = new Moving(walking);
+            walkingMap.put(time, temp);
             walking.clear();
         }
     }
@@ -206,16 +219,16 @@ public class MotionStatisticService {
     /**
      * caculate the average of acceleration in one minute
      *
-     * @param quaternions Quaternion[]
+     * @param dataPacks DataPack[]
      * @return float
      */
-    private float averageAcceleration(ArrayDeque<Quaternion> quaternions) {
+    private float averageAcceleration(ArrayDeque<DataPack> dataPacks) {
         float sum = 0, i = 0;
         AttitudeAngle attitudeAngle;
         Float acceleration;
-        i = quaternions.size();
-        for (Quaternion quaternion : quaternions) {
-            attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(quaternion);
+        i = dataPacks.size();
+        for (DataPack dataPack : dataPacks) {
+            attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(dataPack.getQuaternion());
             acceleration = PhysicalConversionUtil.calculateGeometricMeanAcceleration(attitudeAngle);
             sum += acceleration;
         }

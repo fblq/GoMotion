@@ -2,9 +2,8 @@ package com.campus.gomotion.chart;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.view.View;
-import com.campus.gomotion.classification.Falling;
+import com.campus.gomotion.kind.Falling;
 import com.campus.gomotion.service.MotionStatisticService;
 import com.campus.gomotion.util.TypeConvertUtil;
 import org.achartengine.ChartFactory;

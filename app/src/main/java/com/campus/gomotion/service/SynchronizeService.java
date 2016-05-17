@@ -3,11 +3,15 @@ package com.campus.gomotion.service;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import com.campus.gomotion.sensorData.Accelerometer;
+import com.campus.gomotion.sensorData.AngularVelocity;
+import com.campus.gomotion.sensorData.DataPack;
 import com.campus.gomotion.util.CacheUtil;
 import com.campus.gomotion.util.CircularQueueUtil;
 import com.campus.gomotion.sensorData.Quaternion;
 import com.campus.gomotion.util.BasicConversionUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -18,12 +22,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Author: zhong.zhou
- * Date: 16/4/21
+ * Date: 16/4/22
  * Email: muxin_zg@163.com
  */
 public class SynchronizeService implements Callable<String> {
     private static final String TAG = "SynchronizeService";
-    public static CacheUtil<Quaternion> quaternions = new CacheUtil<>(50);
+    public static CacheUtil<DataPack> dataPacks = new CacheUtil<>(50);
     /**
      * the socket of service
      */
@@ -45,33 +49,40 @@ public class SynchronizeService implements Callable<String> {
     @Override
     public String call() {
         String hexStr = "0123456789ABCDEF";
-        Quaternion quaternion = new Quaternion();
         StringBuilder stringBuilder = new StringBuilder();
-        byte[] data = new byte[18];
+        byte[] data = new byte[1100];
         try {
             inputStream = new DataInputStream(socket.getInputStream());
-            while (inputStream.read(data, 0, 18) != -1) {
-                String tagOne = stringBuilder.append(hexStr.charAt(data[0] >> 4 & 0x0f)).append(hexStr.charAt(data[0] & 0x0f)).toString();
-                stringBuilder.delete(0,stringBuilder.length());
-                String tagTwo = stringBuilder.append(hexStr.charAt(data[1] >> 4 & 0x0f)).append(hexStr.charAt(data[1] & 0x0f)).toString();
-                stringBuilder.delete(0,stringBuilder.length());
-                if (tagOne.equals("80") && tagTwo.equals("0A")) {
-                    quaternion.setW(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[4], data[5])));
-                    quaternion.setX(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[6], data[7])));
-                    quaternion.setY(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[8], data[9])));
-                    quaternion.setZ(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[10], data[11])));
-                    quaternions.put(quaternion);
-                    Message message = handler.obtainMessage();
-                    message.what = 0x12;
-                    message.obj = quaternion.toString();
-                    handler.sendMessage(message);
+            while (inputStream.read(data, 0, 1100) != -1) {
+                for (int i = 0; i < 50; i++) {
+                    DataPack dataPack = new DataPack();
+                    Quaternion quaternion = new Quaternion();
+                    Accelerometer accelerometer = new Accelerometer();
+                    AngularVelocity angularVelocity = new AngularVelocity();
+                    String dataTag = stringBuilder.append(hexStr.charAt(data[i * 22] >> 4 & 0x0f)).append(hexStr.charAt(data[i * 22] & 0x0f)).toString();
+                    stringBuilder.delete(0, stringBuilder.length());
+                    String dataCount = stringBuilder.append(hexStr.charAt(data[1 + i * 22] >> 4 & 0x0f)).append(hexStr.charAt(data[1 + i * 22] & 0x0f)).toString();
+                    stringBuilder.delete(0, stringBuilder.length());
+                    if (dataTag.equals("0A")) {
+                        quaternion.setW(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[2 + i * 22], data[3 + i * 22])))
+                                .setX(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[4 + i * 22], data[5 + i * 22])))
+                                .setY(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[6 + i * 22], data[7 + i * 22])))
+                                .setZ(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[8 + i * 22], data[9 + i * 22])));
+                        accelerometer.setX(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[10 + i * 22], data[11 + i * 22])) * (float) 2.0)
+                                .setY(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[12 + i * 22], data[13 + i * 22])) * (float) 2.0)
+                                .setZ(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[14 + i * 22], data[15 + i * 22])) * (float) 2.0);
+                        angularVelocity.setX(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[16 + i * 22], data[17 + i * 22])) * (float) 2000)
+                                .setY(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[18 + i * 22], data[19 + i * 22])) * (float) 2000)
+                                .setZ(BasicConversionUtil.fixedToFloat(BasicConversionUtil.combine(data[20 + i * 22], data[21 + i * 22])) * (float) 2000);
+                        dataPack.setQuaternion(quaternion).setAccelerometer(accelerometer).setAngularVelocity(angularVelocity);
+                        dataPacks.put(dataPack);
+                        Message message = handler.obtainMessage();
+                        message.what = 0x12;
+                        message.obj = dataCount;
+                        handler.sendMessage(message);
+                    }
                 }
-                /**
-                 * 跳过接收缓存区的残留数据,保证数据实时性
-                 */
-                int length = inputStream.available();
-                inputStream.skipBytes(length);
-                Thread.sleep(20);
+                Thread.sleep(1000);
             }
         } catch (IOException e) {
             Log.v(TAG, "synchronize data io exception", e);
@@ -80,6 +91,11 @@ public class SynchronizeService implements Callable<String> {
         } finally {
             try {
                 if (inputStream != null) {
+                    /**
+                     * 省略接收缓存区的残留数据
+                     */
+                    int length = inputStream.available();
+                    inputStream.skipBytes(length);
                     inputStream.close();
                 }
                 if (socket != null) {

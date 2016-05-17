@@ -28,9 +28,9 @@ public class ViewData extends Activity {
     private static final String TAG = "ViewData";
     private static boolean wifiSpotStatus = false;
     private static boolean synchronizeStatus = false;
-    private MyHandler handler;
-    private TextView textView;
 
+    private TextView textView;
+    private MyHandler handler;
     private Context context = this;
     private Switch wifiSpotSwitch;
     private Switch synchronizeSwitch;
@@ -129,8 +129,7 @@ public class ViewData extends Activity {
         super.onStart();
         wifiSpotSwitch.setChecked(wifiSpotStatus);
         synchronizeSwitch.setChecked(synchronizeStatus);
-        Message message = handler.obtainMessage();
-        handler.handleMessage(message);
+        handler = new MyHandler(getMainLooper());
     }
 
     private class MyHandler extends Handler {
@@ -146,7 +145,7 @@ public class ViewData extends Activity {
                 textView.setText("");
             }
             if (msg.what == 0x12) {
-                textView.append("\n" + msg.obj.toString());
+                textView.append(msg.obj.toString()+" ");
             }
         }
     }
