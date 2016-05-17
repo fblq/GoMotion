@@ -1,14 +1,23 @@
-package com.campus.gomotion.classification;
+package com.campus.gomotion.kind;
+
+import java.io.Serializable;
 
 /**
  * Author: zhong.zhou
  * Date: 16/4/24
  * Email: muxin_zg@163.com
  */
-public class Falling {
+public class Falling implements Serializable {
+    private static final long serialVersionUID = 7997745854078576779L;
     private int count;
 
-    public Falling(){}
+    public Falling() {
+    }
+
+    public Falling(Falling falling) {
+        this.count = falling.getCount();
+    }
+
 
     public int getCount() {
         return count;

@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.*;
 import com.campus.gomotion.R;
 import com.campus.gomotion.sensorData.AttitudeAngle;
+import com.campus.gomotion.sensorData.DataPack;
 import com.campus.gomotion.sensorData.Quaternion;
 import com.campus.gomotion.service.MotionStatisticService;
 import com.campus.gomotion.service.SynchronizeService;
@@ -37,7 +38,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
 
     //private static String file = "/data/data/com.campus.gomotion/myFile.txt";
-    private static String file ="/storage/emulated/0/amotion/er.txt";
+    private static String file = "/storage/emulated/0/amotion/er.txt";
 
     public static String target;
     public static String evaluation;
@@ -118,39 +119,36 @@ public class MainActivity extends Activity implements View.OnClickListener {
             public void run() {
                 FileWriter fileWriter = null;
                 PrintWriter printWriter = null;
-                MotionStatisticService motionStatisticService = new MotionStatisticService();
+                //MotionStatisticService motionStatisticService = new MotionStatisticService();
                 try {
                     fileWriter = new FileWriter(file);
                     printWriter = new PrintWriter(fileWriter);
                     while (true) {
-                        ArrayDeque<Quaternion> quaternions = SynchronizeService.quaternions.takeAll();
-                        for(Quaternion quaternion:quaternions){
-                            AttitudeAngle attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(quaternion);
-                            float v = PhysicalConversionUtil.calculateGeometricMeanAcceleration(attitudeAngle);
-                            printWriter.print("侧偏角:");
-                            printWriter.println(attitudeAngle.getYaw());
-                            printWriter.print("俯仰角:");
-                            printWriter.println(attitudeAngle.getPitch());
-                            printWriter.print("横滚角:");
-                            printWriter.println(attitudeAngle.getRoll());
-                            printWriter.print("加速度几何均值:");
-                            printWriter.println(v);
-
+                        ArrayDeque<DataPack> dataPacks = SynchronizeService.dataPacks.takeAll();
+                        for (DataPack dataPack : dataPacks) {
+                           /* AttitudeAngle attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(dataPack.getQuaternion());
+                            printWriter.print(attitudeAngle.getYaw());
+                            printWriter.print(",");
+                            printWriter.print(attitudeAngle.getPitch());
+                            printWriter.print(",");
+                            printWriter.println(attitudeAngle.getRoll());*/
+                            printWriter.print("0A ");
+                            printWriter.println(dataPack.toString());
                         }
-                        motionStatisticService.motionStatistic(quaternions);
+                        //motionStatisticService.motionStatistic(dataPacks);
                     }
                 } catch (Exception e) {
                     Log.e(TAG, e.getMessage());
-                }finally {
-                    try{
-                        if(printWriter!=null){
+                } finally {
+                    try {
+                        if (printWriter != null) {
                             printWriter.close();
                         }
-                        if(fileWriter!=null){
+                        if (fileWriter != null) {
                             fileWriter.close();
                         }
-                    }catch (IOException e){
-                        Log.d(TAG,e.getMessage());
+                    } catch (IOException e) {
+                        Log.d(TAG, e.getMessage());
                     }
                 }
             }
