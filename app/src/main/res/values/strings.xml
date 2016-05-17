@@ -13,4 +13,7 @@
     <string name="interval">时间</string>
     <string name="completion">完成量</string>
     <string name="selfEvaluation">体力感觉</string>
+    <string name="setstepnumber">设置步数</string>
+    <string name="inputstepnumbei">请输入步数</string>
+
 </resources>
