@@ -5,17 +5,17 @@ package com.campus.gomotion.activity;
  */
 
 
-        import java.text.DecimalFormat;
+import java.text.DecimalFormat;
 
-        import android.content.Context;
-        import android.graphics.Canvas;
-        import android.graphics.Color;
-        import android.graphics.Paint;
-        import android.graphics.RectF;
-        import android.util.AttributeSet;
-        import android.view.View;
-        import android.view.animation.Animation;
-        import android.view.animation.Transformation;
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.util.AttributeSet;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 
 public class CircleBar extends View {
 
@@ -135,7 +135,6 @@ public class CircleBar extends View {
      * 进度条动画
      *
      * @author Administrator
-     *
      */
     public class BarAnimation extends Animation {
         public BarAnimation() {
