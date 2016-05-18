@@ -20,67 +20,53 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
             </TabWidget>
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-               >
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:orientation="horizontal">
 
+                <Switch
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="热点通信"
+                        android:id="@+id/communication"
+                        android:layout_marginRight="30dp"
+                        android:textColor="#000000"
+                        android:textOff="OFF"
+                        android:textOn="ON"
+                        android:checked="false"
+                        android:thumb="@drawable/switch_thumb"
+                        android:track="@drawable/switch_track"/>
+                <EditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/setnum"
+                        android:inputType="number"
+                        android:hint="@string/inputstepnumbei"/>
                 <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="数据同步"
-                    android:id="@+id/synchronization"
-                    android:checked="false"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="0dp"
-                    />
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="查看数据"
-                    android:id="@+id/dataView"
-                    android:checked="false"
-                    android:layout_centerVertical="true"
-                    android:layout_toRightOf="@+id/synchronization"
-                    android:layout_toEndOf="@+id/synchronization"/>
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="热点通信"
-                    android:id="@+id/communication"
-                    android:layout_centerVertical="true"
-                    android:layout_toRightOf="@+id/dataView"
-                    android:layout_toEndOf="@+id/dataView"
-                    android:layout_marginRight="0dp"
-                    />
-            </RelativeLayout>
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/setnum"
-                android:inputType="number"
-                android:hint="@string/inputstepnumbei"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/setnumbutton"
-                android:text="@string/setstepnumber" />
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/setnumbutton"
+                        android:text="@string/setstepnumber"/>
+            </LinearLayout>
             <FrameLayout
                     android:id="@android:id/tabcontent"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
-
                 <!-- 第一个布局 -->
                 <include android:id="@+id/view1"
-                    layout="@layout/view1"/>
+                         layout="@layout/view1"/>
                 <!-- 第二个布局 -->
                 <include android:id="@+id/view2"
-                    layout="@layout/view2"/>
+                         layout="@layout/view2"/>
                 <!-- 第三个tab的布局 -->
                 <include android:id="@+id/view3"
-                    layout="@layout/view3"/>
+                         layout="@layout/view3"/>
+                <include android:id="@+id/dataView" layout="@layout/data_view"
+                         android:visibility="invisible"/>
             </FrameLayout>
         </LinearLayout>
+
     </TabHost>
 
 </LinearLayout>

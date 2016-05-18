@@ -1,41 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-    <Switch
+    <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/wifiSpotSwitch"
-            android:text="热点状态 " android:textOff="OFF" android:textOn="ON" android:checked="false"
-            android:layout_alignParentTop="true"
-            android:layout_above="@+id/dataTextView"/>
-    <Switch
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="同步状态"
-            android:id="@+id/synchronizeSwitch"
-            android:textOff="OFF" android:textOn="ON"
-            android:checked="false"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="false" android:layout_marginRight="50dp" android:layout_marginEnd="50dp"
-            android:layout_alignParentTop="true" android:layout_above="@+id/dataTextView"/>
-    <TextView
-            android:padding="10dp"
-            android:lines="20"
-            android:overScrollMode="always"
-            android:scrollbarStyle="insideInset"
-            android:minLines="20"
-            android:scrollbars="vertical"
-
+            android:id="@+id/imageView" android:layout_gravity="right"/>
+    <LinearLayout
+            android:id="@+id/switchtool"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:ems="10"
-            android:id="@+id/dataTextView"
-            android:textIsSelectable="false"
-            android:hint="同步的数据..." android:gravity="top|left"
-            android:background="#f3f1f1"
-            android:layout_alignParentBottom="true"/>
-</RelativeLayout>
+            android:background="#000000"
+            android:orientation="horizontal">
+        <Switch
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:id="@+id/wifiSpotSwitch"
+                android:text="热点状态 "
+                android:textColor="#000000"
+                android:textOff="OFF"
+                android:textOn="ON"
+                android:checked="false"
+                android:background="#ffffff"
+                android:thumb="@drawable/switch_thumb"
+                android:track="@drawable/switch_track"/>
+
+
+        <Switch
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:text="同步状态"
+                android:background="#ffffff"
+                android:textColor="#000000"
+                android:id="@+id/synchronizeSwitch"
+                android:textOff="OFF"
+                android:textOn="ON"
+                android:checked="false"
+                android:thumb="@drawable/switch_thumb"
+                android:track="@drawable/switch_track"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_below="@+id/switchtool">
+
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#ffffff"
+
+                android:padding="10dp"
+                android:lines="20"
+                android:overScrollMode="always"
+                android:scrollbarStyle="insideInset"
+                android:scrollbars="vertical"
+                android:inputType="textMultiLine"
+                android:ems="10"
+                android:id="@+id/dataTextView"
+                android:textIsSelectable="false"
+                android:hint="同步的数据序号..."/>
+    </LinearLayout>
+
+</LinearLayout>
+

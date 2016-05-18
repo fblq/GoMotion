@@ -1,19 +1,26 @@
 package com.campus.gomotion.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import com.campus.gomotion.R;
+import com.campus.gomotion.constant.WifiApInfo;
 import com.campus.gomotion.sensorData.AttitudeAngle;
 import com.campus.gomotion.sensorData.DataPack;
 import com.campus.gomotion.sensorData.Quaternion;
 import com.campus.gomotion.service.MotionStatisticService;
+import com.campus.gomotion.service.PortListenerService;
 import com.campus.gomotion.service.SynchronizeService;
+import com.campus.gomotion.service.WifiApService;
 import com.campus.gomotion.util.FileUtil;
 import com.campus.gomotion.util.PhysicalConversionUtil;
 
@@ -25,9 +32,7 @@ import java.util.ArrayDeque;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
 
 /**
  * Author: zhong.zhou
@@ -45,12 +50,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public static String completions;
 
     private TabHost tabHost;
-    private Button communicationButton;
+    private Switch communicationSwitch;
     private Button sportButton;
     private Button monitorButton;
     private Button assessButton;
-    private Button synchronizationButton;
-    private Button dataViewButton;
 
     private Timer timer;
 
@@ -65,6 +68,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private EditText movingTarget;
     private TextView completion;
     private EditText selfEvaluation;
+
+    private static boolean wifiSpotStatus = false;
+    private static boolean synchronizeStatus = false;
+
+    private LinearLayout dateView;
+    private TextView textView;
+    private MyHandler handler;
+    private Context context = this;
+    private Switch wifiSpotSwitch;
+    private Switch synchronizeSwitch;
 
     private CircleBar circleBar;
     private EditText setnum;
@@ -94,13 +107,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         });
 
         tabHost = (TabHost) this.findViewById(R.id.tabhost);
-        communicationButton = (Button) this.findViewById(R.id.communication);
+        communicationSwitch = (Switch) this.findViewById(R.id.communication);
         sportButton = (Button) this.findViewById(R.id.sport);
         monitorButton = (Button) this.findViewById(R.id.monitor);
         assessButton = (Button) this.findViewById(R.id.assess);
-
-        synchronizationButton = (Button) this.findViewById(R.id.synchronization);
-        dataViewButton = (Button) this.findViewById(R.id.dataView);
 
         walkTime = (TextView) this.findViewById(R.id.walkTime);
         walkDistance = (TextView) this.findViewById(R.id.walkDistance);
@@ -114,6 +124,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         completion = (TextView) this.findViewById(R.id.completion);
         selfEvaluation = (EditText) this.findViewById(R.id.selfEvaluation);
 
+        dateView = (LinearLayout) this.findViewById(R.id.dataView);
+        wifiSpotSwitch = (Switch) this.findViewById(R.id.wifiSpotSwitch);
+        synchronizeSwitch = (Switch) this.findViewById(R.id.synchronizeSwitch);
+        textView = (TextView) this.findViewById(R.id.dataTextView);
+        handler = new MyHandler(getMainLooper());
+
         /**
          * initial table host
          */
@@ -126,10 +142,82 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 getDrawable(R.drawable.note)).setContent(R.id.view3));
 
 
-        communicationButton.setOnClickListener(this);
+        communicationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    dateView.setVisibility(View.VISIBLE);
+                } else {
+                    dateView.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
         sportButton.setOnClickListener(this);
         monitorButton.setOnClickListener(this);
         assessButton.setOnClickListener(this);
+
+        /**
+         * wifi spot switch
+         */
+        wifiSpotSwitch.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
+            private WifiApService wifiApService = new WifiApService(context);
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    if (wifiApService.createWifiAp(WifiApInfo.WIFI_AP_NAME, WifiApInfo.WIFI_AP_PASSWORD)) {
+                        Log.v(TAG, "createWifiAp success");
+                    } else {
+                        Log.v(TAG, "createWifiAp failed");
+                    }
+                } else {
+                    if (wifiApService.isWifiApEnabled()) {
+                        wifiApService.closeWifiAp();
+                    }
+                    if (synchronizeSwitch != null) {
+                        synchronizeSwitch.setChecked(false);
+                    }
+                }
+            }
+        });
+
+        /**
+         * data synchronize switch
+         */
+        synchronizeSwitch.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
+            private ExecutorService executor = Executors.newSingleThreadExecutor();
+            private PortListenerService portListenerService = new PortListenerService(WifiApInfo.SERVICE_SPORT, handler);
+            private FutureTask<String> futureTask = new FutureTask<>(portListenerService);
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (executor.isShutdown()) {
+                    executor = Executors.newSingleThreadExecutor();
+                }
+                if (futureTask.isCancelled()) {
+                    portListenerService = new PortListenerService(WifiApInfo.SERVICE_SPORT, handler);
+                    futureTask = new FutureTask<>(portListenerService);
+                }
+                if (isChecked) {
+                    if (wifiSpotSwitch != null && !wifiSpotSwitch.isChecked()) {
+                        Log.v(TAG, "please open wifiAp first");
+                    }
+                    executor.submit(futureTask);
+                    executor.shutdown();
+                    Log.v(TAG, "synchronizing data");
+                } else {
+                    /**
+                     * interrupt the listen service
+                     */
+                    portListenerService.closeServerSocket();
+                    if (futureTask.cancel(true)) {
+                        Log.v(TAG, "cancel listen service succeed");
+                    } else {
+                        Log.v(TAG, "cancel listen service failed");
+                    }
+                }
+            }
+        });
 
         /**
          * start timer task
@@ -181,11 +269,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.communication:
-                Intent connectionIntent = new Intent();
-                connectionIntent.setClass(MainActivity.this, ViewData.class);
-                startActivity(connectionIntent);
-                break;
             case R.id.sport:
                 Intent movementIntent = new Intent();
                 movementIntent.setClass(MainActivity.this, Movement.class);
@@ -285,20 +368,34 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private class MyHandler extends Handler {
+        Looper looper;
+
+        MyHandler(Looper looper) {
+            this.looper = looper;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            if (textView.getLineCount() >= 20) {
+                textView.setText("");
+            }
+            if (msg.what == 0x12) {
+                textView.append(msg.obj.toString() + " ");
+            }
+        }
     }
 }

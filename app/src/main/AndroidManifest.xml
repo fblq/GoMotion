@@ -13,7 +13,7 @@
                  android:label="@string/app_name"
                  android:icon="@mipmap/tu"
                  android:supportsRtl="true"
-        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+        android:theme="@android:style/Theme.Black.NoTitleBar">
         <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -21,7 +21,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.ViewData"/>
         <activity android:name=".activity.Movement"/>
         <activity android:name=".activity.Monitor"/>
         <activity android:name=".activity.Evaluation"/>
