@@ -44,22 +44,23 @@ public class EvaluateChart extends AbstractDemoChart {
         xValues.add(new double[]{2, 4, 6});
         List<double[]> yValues = new ArrayList<>();
         if (MainActivity.completions != null && !MainActivity.completions.isEmpty()) {
-            yValues.add(new double[]{Double.parseDouble(MainActivity.completions + 50), 0, 0});
+            yValues.add(new double[]{Double.parseDouble(MainActivity.completions), 0, 0});
         } else {
-            yValues.add(new double[]{100, 0, 0});
+            yValues.add(new double[]{0, 0, 0});
         }
         if (MainActivity.evaluation != null && !MainActivity.evaluation.isEmpty()) {
             yValues.add(new double[]{0, 0, Double.parseDouble(MainActivity.evaluation)});
         } else {
-            yValues.add(new double[]{0, 0, 100});
+            yValues.add(new double[]{0, 0, 0});
         }
         int[] colors = new int[]{Color.BLUE, Color.GRAY};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
         renderer.setChartTitle("评估");
         renderer.setChartTitleTextSize(60);
-        renderer.setXTitle("时间(hh:mm:ss)");
-        renderer.setYTitle("分数(%)");
         renderer.setAxisTitleTextSize(40);
+        renderer.setLabelsTextSize(20);
+        renderer.setXTitle("拟定日期(天)");
+        renderer.setYTitle("百分比(%)");
         renderer.setLabelsColor(Color.GREEN);
         renderer.setAxesColor(Color.BLUE);
         renderer.setXLabels(8);

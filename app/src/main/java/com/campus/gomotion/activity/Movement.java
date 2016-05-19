@@ -2,25 +2,19 @@ package com.campus.gomotion.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.RemoteInput;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 import android.view.*;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 import com.campus.gomotion.R;
 import com.campus.gomotion.adapter.ViewPagerAdapter;
-import com.campus.gomotion.chart.StepChart;
 import com.campus.gomotion.service.MotionStatisticService;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Movement extends Activity {
     private final static String TAG = "Movement";
@@ -42,7 +36,7 @@ public class Movement extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.movement_chart);
+        setContentView(R.layout.movement);
         radioGroup = (RadioGroup) findViewById(R.id.tab_group);
         rb_one = (RadioButton) findViewById(R.id.step);
         rb_two = (RadioButton) findViewById(R.id.calories);
@@ -113,19 +107,19 @@ public class Movement extends Activity {
     protected void onStart() {
         super.onStart();
         if (MotionStatisticService.totalWalking != null) {
-            walkTime.setText(String.valueOf(MotionStatisticService.totalWalking.getTime()));
+            walkTime.setText(String.valueOf(MotionStatisticService.totalWalking.getTime() / 60));
             walkDistance.setText(String.valueOf(MotionStatisticService.totalWalking.getDistance()));
             walkSteps.setText(String.valueOf(MotionStatisticService.totalWalking.getStep()));
             walkCalories.setText(String.valueOf(MotionStatisticService.totalWalking.getEnergyConsumption()));
         }
         if (MotionStatisticService.totalRunning != null) {
-            runTime.setText(String.valueOf(MotionStatisticService.totalRunning.getTime()));
+            runTime.setText(String.valueOf(MotionStatisticService.totalRunning.getTime() / 60));
             runDistance.setText(String.valueOf(MotionStatisticService.totalRunning.getDistance()));
             runSteps.setText(String.valueOf(MotionStatisticService.totalRunning.getStep()));
             runCalorie.setText(String.valueOf(MotionStatisticService.totalRunning.getEnergyConsumption()));
 
         }
-        Log.v(TAG, "refresh data succeed");
+        Log.v(TAG, "refresh movement data succeed");
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -42,8 +42,7 @@ import java.util.concurrent.*;
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
 
-    //private static String file = "/data/data/com.campus.gomotion/myFile.txt";
-    private static String file = "/storage/emulated/0/amotion/er.txt";
+    private static String file = "/storage/emulated/0/amotion/yi.txt";
 
     public static String target;
     public static String evaluation;
@@ -66,11 +65,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView averageTime;
 
     private EditText movingTarget;
-    private TextView completion;
     private EditText selfEvaluation;
-
-    private static boolean wifiSpotStatus = false;
-    private static boolean synchronizeStatus = false;
 
     private LinearLayout dateView;
     private TextView textView;
@@ -80,31 +75,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Switch synchronizeSwitch;
 
     private CircleBar circleBar;
-    private EditText setnum;
-    private Button setnumbutton;
-    int i = 0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
-
-        circleBar = (CircleBar) findViewById(R.id.circle);
-        setnum = (EditText) findViewById(R.id.setnum);
-        setnumbutton = (Button) findViewById(R.id.setnumbutton);
-        circleBar.setMaxstepnumber(10000);//在此处设置目标步数
-        setnumbutton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                /**
-                 * 点击设置步数
-                 */
-                circleBar.update(Integer.parseInt(setnum.getText().toString()),
-                        700);
-            }
-        });
 
         tabHost = (TabHost) this.findViewById(R.id.tabhost);
         communicationSwitch = (Switch) this.findViewById(R.id.communication);
@@ -112,6 +87,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         monitorButton = (Button) this.findViewById(R.id.monitor);
         assessButton = (Button) this.findViewById(R.id.assess);
 
+        dateView = (LinearLayout) this.findViewById(R.id.dataView);
+        wifiSpotSwitch = (Switch) this.findViewById(R.id.wifiSpotSwitch);
+        synchronizeSwitch = (Switch) this.findViewById(R.id.synchronizeSwitch);
+        textView = (TextView) this.findViewById(R.id.dataTextView);
         walkTime = (TextView) this.findViewById(R.id.walkTime);
         walkDistance = (TextView) this.findViewById(R.id.walkDistance);
         runTime = (TextView) this.findViewById(R.id.runTime);
@@ -121,13 +100,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         averageTime = (TextView) this.findViewById(R.id.averageTime);
 
         movingTarget = (EditText) this.findViewById(R.id.movingTarget);
-        completion = (TextView) this.findViewById(R.id.completion);
         selfEvaluation = (EditText) this.findViewById(R.id.selfEvaluation);
-
-        dateView = (LinearLayout) this.findViewById(R.id.dataView);
-        wifiSpotSwitch = (Switch) this.findViewById(R.id.wifiSpotSwitch);
-        synchronizeSwitch = (Switch) this.findViewById(R.id.synchronizeSwitch);
-        textView = (TextView) this.findViewById(R.id.dataTextView);
+        circleBar = (CircleBar) this.findViewById(R.id.circle);
         handler = new MyHandler(getMainLooper());
 
         /**
@@ -140,7 +114,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 getDrawable(R.drawable.kid5)).setContent(R.id.view2));
         tabHost.addTab(tabHost.newTabSpec("tab3").setIndicator("", getResources().
                 getDrawable(R.drawable.note)).setContent(R.id.view3));
-
 
         communicationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -219,34 +192,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
             }
         });
 
-        /**
-         * start timer task
-         */
-        timer = new Timer(true);
-        setTimerTask();
-
         new Thread(new Runnable() {
             @Override
             public void run() {
                 FileWriter fileWriter = null;
                 PrintWriter printWriter = null;
-                //MotionStatisticService motionStatisticService = new MotionStatisticService();
+                MotionStatisticService motionStatisticService = new MotionStatisticService();
                 try {
                     fileWriter = new FileWriter(file);
                     printWriter = new PrintWriter(fileWriter);
                     while (true) {
                         ArrayDeque<DataPack> dataPacks = SynchronizeService.dataPacks.takeAll();
                         for (DataPack dataPack : dataPacks) {
-                           /* AttitudeAngle attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(dataPack.getQuaternion());
-                            printWriter.print(attitudeAngle.getYaw());
-                            printWriter.print(",");
-                            printWriter.print(attitudeAngle.getPitch());
-                            printWriter.print(",");
-                            printWriter.println(attitudeAngle.getRoll());*/
                             printWriter.print("0A ");
                             printWriter.println(dataPack.toString());
                         }
-                        //motionStatisticService.motionStatistic(dataPacks);
+                        motionStatisticService.motionStatistic(dataPacks);
                     }
                 } catch (Exception e) {
                     Log.e(TAG, e.getMessage());
@@ -264,6 +225,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
             }
         }).start();
+
+        /**
+         * start timer task
+         */
+        timer = new Timer(true);
+        setTimerTask();
     }
 
     @Override
@@ -293,11 +260,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onStart() {
         super.onStart();
         if (MotionStatisticService.totalWalking != null) {
-            walkTime.setText(String.valueOf(MotionStatisticService.totalWalking.getTime()));
+            walkTime.setText(String.valueOf(MotionStatisticService.totalWalking.getTime() / 60));
             walkDistance.setText(String.valueOf(MotionStatisticService.totalWalking.getDistance()));
         }
         if (MotionStatisticService.totalRunning != null) {
-            runTime.setText(String.valueOf(MotionStatisticService.totalRunning.getTime()));
+            runTime.setText(String.valueOf(MotionStatisticService.totalRunning.getTime() / 60));
             runDistance.setText(String.valueOf(MotionStatisticService.totalRunning.getDistance()));
         }
         fallingCount.setText(String.valueOf(MotionStatisticService.calculateFallingTotalCount()));
@@ -305,17 +272,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         target = movingTarget.getText().toString();
         if (!target.isEmpty()) {
-            completion.setText(String.valueOf((float) MotionStatisticService.calculateCompletion() / Float.parseFloat(target)));
+            circleBar.setMaxstepnumber(Integer.parseInt(target));
+        } else {
+            circleBar.setMaxstepnumber(10000);
         }
-        completions = completion.getText().toString();
+        long currentCompletion = MotionStatisticService.calculateCompletion();
+        if (!target.isEmpty()) {
+            completions = String.valueOf(100 * (float) currentCompletion / Float.parseFloat(target));
+        } else {
+            completions = String.valueOf(100 * (float) currentCompletion / 10000);
+        }
         evaluation = selfEvaluation.getText().toString();
-        Log.v(TAG, "refresh data succeed");
+        circleBar.update((int) currentCompletion, 800);
+        Log.v(TAG, "refresh ui succeed");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        completions = completion.getText().toString();
         evaluation = selfEvaluation.getText().toString();
     }
 
@@ -329,26 +303,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void setTimerTask() {
-        final MotionStatisticService motionStatisticService
-                = new MotionStatisticService();
-        /**
-         * time interval is 1s
-         */
-       /* TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                if (SynchronizeService.quaternions.size() >= 50) {
-                    CopyOnWriteArrayList<Quaternion> quaternions = SynchronizeService.quaternions;
-                    motionStatisticService.motionStatistic(quaternions);
-                    SynchronizeService.quaternions.clear();
-                }
-                Log.v(TAG, "timer task for counting motion");
-            }
-        };*/
-        /**
-         * time interval is one minute
-         */
-        TimerTask timerTask1 = new TimerTask() {
+        final MotionStatisticService motionStatisticService = new MotionStatisticService();
+        TimerTask loadData = new TimerTask() {
             @Override
             public void run() {
                 motionStatisticService.loadDataToCache();
@@ -362,8 +318,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 Log.v(TAG, "load data to cache");
             }
         };
-        //timer.schedule(timerTask, 10000, 1000);
-        timer.schedule(timerTask1, 15000, 1000 * 60);
+        timer.schedule(loadData, 15000, 1000 * 60);
     }
 
     @Override

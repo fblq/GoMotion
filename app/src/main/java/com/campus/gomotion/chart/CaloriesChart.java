@@ -43,6 +43,7 @@ public class CaloriesChart extends AbstractDemoChart {
         List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
         Map<Time, Double> caloriesMap = MotionStatisticService.calculateTotalCalories();
+        int xStart = (int) TypeConvertUtil.timeToDouble((Time) caloriesMap.keySet().toArray()[0]);
         int size = caloriesMap.size();
         double[] time = new double[size];
         double[] calories = new double[size];
@@ -61,17 +62,18 @@ public class CaloriesChart extends AbstractDemoChart {
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
         renderer.setChartTitle("卡路里");
         renderer.setChartTitleTextSize(60);
+        renderer.setAxisTitleTextSize(40);
+        renderer.setLabelsTextSize(20);
         renderer.setXTitle("时间(hh:mm:ss)");
         renderer.setYTitle("能耗(cal)");
-        renderer.setAxisTitleTextSize(40);
         renderer.setLabelsColor(Color.GREEN);
         renderer.setAxesColor(Color.BLUE);
-        renderer.setXLabels(24);
-        renderer.setXAxisMin(0);
-        renderer.setXAxisMax(12);
-        renderer.setYLabels(10);
+        renderer.setXLabels(20);
+        renderer.setXAxisMin(xStart);
+        renderer.setXAxisMax(xStart + 0.2);
+        renderer.setYLabels(6);
         renderer.setYAxisMin(0);
-        renderer.setYAxisMax(100);
+        renderer.setYAxisMax(60);
         return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }

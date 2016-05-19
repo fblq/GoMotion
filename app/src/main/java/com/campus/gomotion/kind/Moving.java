@@ -9,7 +9,7 @@ import java.io.Serializable;
  */
 public class Moving implements Serializable {
     private static final long serialVersionUID = 8090854784395801378L;
-    private float time;
+    private long time;
     private float distance;
     private long step;
     private float energyConsumption;
@@ -24,7 +24,7 @@ public class Moving implements Serializable {
         this.energyConsumption = moving.getEnergyConsumption();
     }
 
-    public Moving(float time, float distance, long step, float energyConsumption) {
+    public Moving(long time, float distance, long step, float energyConsumption) {
         this.time = time;
         this.distance = distance;
         this.step = step;
@@ -55,11 +55,11 @@ public class Moving implements Serializable {
         this.step = step;
     }
 
-    public float getTime() {
+    public long getTime() {
         return time;
     }
 
-    public void setTime(float time) {
+    public void setTime(long time) {
         this.time = time;
     }
 

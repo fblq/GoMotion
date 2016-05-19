@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -21,15 +22,15 @@ import java.util.*;
 public class Monitor extends Activity {
     private static final String TAG = "Monitor";
     private Context context;
-    private TextView fallingTime;
-    private TextView interval;
     private TableLayout tableLayout;
+    //private ScrollView scrollView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.monitor_chart);
         tableLayout = (TableLayout) this.findViewById(R.id.fallingDetail);
+        //scrollView = (ScrollView) this.findViewById(R.id.scrollView);
         context = this;
     }
 
@@ -50,8 +51,9 @@ public class Monitor extends Activity {
                 tableRow.addView(textView);
                 tableRow.addView(textView1);
                 tableLayout.addView(tableRow);
+                //scrollView.addView(tableRow);
             }
         }
-        Log.v(TAG, "refresh data succeed");
+        Log.v(TAG, "refresh monitor data succeed");
     }
 }

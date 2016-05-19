@@ -34,10 +34,12 @@ public class Evaluation extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (!MainActivity.target.isEmpty()) {
-            completion.setText(String.valueOf((float) MotionStatisticService.calculateCompletion() / Float.parseFloat(MainActivity.target)));
+        if (MainActivity.target != null && !MainActivity.target.isEmpty()) {
+            completion.setText(String.valueOf(100 * (float) MotionStatisticService.calculateCompletion() / Float.parseFloat(MainActivity.target)));
         }
-        selfEvaluation.setText(MainActivity.evaluation);
-        Log.v(TAG, "refresh data succeed");
+        if (MainActivity.evaluation != null && !MainActivity.evaluation.isEmpty()) {
+            selfEvaluation.setText(MainActivity.evaluation);
+        }
+        Log.v(TAG, "refresh evaluation data succeed");
     }
 }

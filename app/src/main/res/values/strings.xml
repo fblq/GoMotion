@@ -3,17 +3,14 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="type">类别</string>
-    <string name="time">时间</string>
-    <string name="distance">距离</string>
-    <string name="steps">步数</string>
-    <string name="calorie">卡路里</string>
+    <string name="time">时间(min)</string>
+    <string name="distance">距离(m)</string>
+    <string name="steps">步数(步)</string>
+    <string name="calorie">卡路里(cal)</string>
     <string name="walking">步行</string>
     <string name="running">跑步</string>
-    <string name="fallingTime">跌倒时刻</string>
-    <string name="interval">时间</string>
-    <string name="completion">完成量</string>
-    <string name="selfEvaluation">体力感觉</string>
-    <string name="setstepnumber">设置步数</string>
-    <string name="inputstepnumbei">请输入步数</string>
-
+    <string name="fallingTime">跌倒时刻(hh:mm:ss)</string>
+    <string name="interval">时间(s)</string>
+    <string name="completion">完成量(%)</string>
+    <string name="selfEvaluation">体力感觉(%)</string>
 </resources>

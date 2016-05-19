@@ -1,7 +1,9 @@
 package com.campus.gomotion.service;
 
+import com.campus.gomotion.constant.UserInfo;
 import com.campus.gomotion.kind.Falling;
 import com.campus.gomotion.kind.Moving;
+import com.campus.gomotion.sensorData.Accelerometer;
 import com.campus.gomotion.sensorData.AttitudeAngle;
 import com.campus.gomotion.sensorData.DataPack;
 import com.campus.gomotion.sensorData.Quaternion;
@@ -22,60 +24,37 @@ public class MotionStatisticService {
     public static Map<Time, Moving> runningMap = new HashMap<>();
 
     public static Map<Time, Float> fallingLog = new HashMap<>();
-    public static Moving totalRunning;
-    public static Moving totalWalking;
+    public static Moving totalRunning = new Moving();
+    public static Moving totalWalking = new Moving();
     /**
      * 存储小段时间内的数据(当前间隔:1分钟)
      */
-    private Falling falling;
-    private Moving running;
-    private Moving walking;
-
-    /**
-     * 寻找极值点的辅助变量
-     */
-    private float endPoint;
-    private float interPoint;
-    private float accelerationMin;
-    private float accelerationMax;
-
-    /**
-     * 计步变量
-     */
-    private int stepCount;
-
-    /**
-     * 行走或跑步的时间计量
-     */
-    private int t;
+    private static Falling falling = new Falling();
+    private static Moving running = new Moving();
+    private static Moving walking = new Moving();
 
     /**
      * 跌倒到爬起来的时间计量
      */
-    private int interval;
-
-    public MotionStatisticService() {
-        falling = new Falling();
-        running = new Moving();
-        walking = new Moving();
-        endPoint = 0;
-        interPoint = 0;
-        accelerationMax = 0;
-        accelerationMin = 0;
-        t = 0;
-        interval = 0;
-    }
+    private static int interval = 0;
 
     /**
-     * upTime the extremum of acceleration geometric mean
+     * 跌倒状态位
+     */
+    private static boolean isFall = false;
+
+    /**
+     * 更新加速度几何均值的峰值点(10s一次)
      *
      * @param dataPack DataPack
      * @return boolean
      */
     private boolean updateExtremum(DataPack dataPack) {
+        float interPoint = 0, endPoint = 0, accelerationMin = 0, accelerationMax = 0;
+        int stepCount = 0, t = 0;
         boolean flag = false;
         AttitudeAngle attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(dataPack.getQuaternion());
-        float temp = PhysicalConversionUtil.calculateGeometricMeanAcceleration(attitudeAngle);
+        float temp = PhysicalConversionUtil.calculateGeometricMeanAcceleration(dataPack.getAccelerometer());
         if (interPoint < endPoint && interPoint < temp) {
             accelerationMin = interPoint;
             flag = true;
@@ -96,37 +75,46 @@ public class MotionStatisticService {
         Quaternion frontQuaternion = dataPacks.getFirst().getQuaternion();
         AttitudeAngle tailAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(tailQuaternion);
         AttitudeAngle frontAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(frontQuaternion);
-        float tailAcceleration = PhysicalConversionUtil.calculateGeometricMeanAcceleration(tailAttitudeAngle);
-        float frontAcceleration = PhysicalConversionUtil.calculateGeometricMeanAcceleration(frontAttitudeAngle);
         float tailYaw = tailAttitudeAngle.getYaw();
         float tailPitch = tailAttitudeAngle.getPitch();
         float tailRoll = tailAttitudeAngle.getRoll();
         float frontYaw = frontAttitudeAngle.getYaw();
         float frontPitch = frontAttitudeAngle.getPitch();
         float frontRoll = frontAttitudeAngle.getRoll();
+
+        float averageAcceleration = averageAcceleration(dataPacks);
         /**
          * 跌倒情况
          */
         if (frontYaw > 30 || frontYaw < -30 || frontPitch > 45 || frontPitch < -30) {
             if (tailYaw > 30 || tailYaw < -30 || tailPitch > 45 || tailPitch < -30) {
                 falling.increase();
-                /**
-                 * 获得系统时间并计时,更新fallingLog
-                 */
-                long t = System.currentTimeMillis();
-                Time time = new Time(t);
-                if (interval != 0) {
-                    fallingLog.put(time, (Float) ((float) (interval * 20) / (float) 1000));
-                    interval = 0;
-                }
+                isFall = true;
             }
         }
+        if (isFall) {
+            long t = System.currentTimeMillis();
+            Time time = new Time(t);
+            fallingLog.put(time, (float) (interval));
+            isFall = false;
+        }
+        interval++;
+        long time = 1;
+        float distance = calculateDistance(averageAcceleration, time);
+        float energyConsumption = calculateEnergyConsumption(UserInfo.WEIGHT, averageAcceleration, time);
         /**
          * 正常行走/静止情况
          */
         if (frontYaw > -10 && frontYaw < 10 && frontPitch > -10 && frontPitch < 10) {
             if (tailYaw > -10 && tailYaw < 10 && tailYaw > -10 && tailYaw < 10) {
-
+                Moving moving = new Moving(time, distance, 1, energyConsumption);
+                walking.add(moving);
+                totalWalking.add(moving);
+                /*if (averageAcceleration > 1 && averageAcceleration < 2) {
+                    Moving moving = new Moving(time, distance, 1, energyConsumption);
+                    walking.add(moving);
+                    totalWalking.add(moving);
+                }*/
             }
         }
         /**
@@ -134,46 +122,20 @@ public class MotionStatisticService {
          */
         if ((frontYaw > 10 && frontYaw < 30) || (frontYaw > -30 && frontYaw < -10) || (frontPitch > 10 && frontPitch < 45) || (frontPitch > -30 && frontPitch < -10)) {
             if ((tailYaw > 10 && tailYaw < 30) || (tailYaw > -30 && tailYaw < -10) || (tailPitch > 10 && tailPitch < 45) || (tailPitch > -30 && tailPitch < -10)) {
-
-            }
-        }
-        float averageAcceleration = averageAcceleration(dataPacks);
-        /**
-         * 不是跌倒的状态下,找到极值后进行计算并判断情况
-         */
-        for (DataPack dataPack : dataPacks) {
-            if (updateExtremum(dataPack)) {
-                /**
-                 * 依据一分钟内的加速度几何均值的平均值判断行走和跑步两种状态
-                 */
-                float temp = (float) (1 / 2) * (accelerationMin + accelerationMax);
-                float time = calculateTime(t);
-                float distance = calculateDistance(temp, time);
-                long step = calculateStep(stepCount);
-                /**
-                 * 76为用户体重(单位:kg)
-                 */
-                float energyConsumption = calculateEnergyConsumption(76, time);
-                Moving moving = new Moving(time, distance, step, energyConsumption);
-                /**
-                 * 根据加速度的几何均值作为判别行走和跑步两种状态
-                 */
-                if (averageAcceleration > 2) {
+                Moving moving = new Moving(time, distance, 1, energyConsumption);
+                running.add(moving);
+                totalRunning.add(moving);
+               /* if (averageAcceleration > 2) {
+                    Moving moving = new Moving(time, distance, 1, energyConsumption);
                     running.add(moving);
                     totalRunning.add(moving);
-                } else {
-                    /**
-                     * 行走的情况
-                     */
-                    walking.add(moving);
-                    totalWalking.add(moving);
-                }
+                }*/
             }
         }
     }
 
     /**
-     * every 1 minutes, load data to cache to statistic daily motion
+     * 添加数据到每日的运动记录中
      */
     public void loadDataToCache() {
         long t = System.currentTimeMillis() - 60 * 1000;
@@ -196,7 +158,7 @@ public class MotionStatisticService {
     }
 
     /**
-     * clear cache at 0:00 every day
+     * 清空缓存
      */
     public void clearCache() {
         if (totalWalking != null) {
@@ -217,26 +179,25 @@ public class MotionStatisticService {
     }
 
     /**
-     * caculate the average of acceleration in one minute
+     * 计算1s内的平均加速度(单位:N/s)
      *
      * @param dataPacks DataPack[]
      * @return float
      */
     private float averageAcceleration(ArrayDeque<DataPack> dataPacks) {
-        float sum = 0, i = 0;
-        AttitudeAngle attitudeAngle;
-        Float acceleration;
+        float sum = 0, i, temp;
+        Accelerometer acceleration;
         i = dataPacks.size();
         for (DataPack dataPack : dataPacks) {
-            attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(dataPack.getQuaternion());
-            acceleration = PhysicalConversionUtil.calculateGeometricMeanAcceleration(attitudeAngle);
-            sum += acceleration;
+            acceleration = dataPack.getAccelerometer();
+            temp = PhysicalConversionUtil.calculateGeometricMeanAcceleration(acceleration);
+            sum += temp;
         }
         return (sum / i);
     }
 
     /**
-     * calculate time
+     * 根据数据发送频率20ms/次计算时间(单位:s)
      *
      * @param t int
      * @return long
@@ -246,17 +207,17 @@ public class MotionStatisticService {
     }
 
     /**
-     * calculate distance
+     * 根据平均加速度求位移(单位:m)
      *
      * @param a float
      * @return float
      */
     private float calculateDistance(float a, float t) {
-        return (float) (1 / 2) * a * (float) t * (float) t;
+        return (float) (1.0 / 2.0) * a * t * t;
     }
 
     /**
-     * calculate steps
+     * 根据波峰/波谷的数目计算步数(单位:步)
      *
      * @param count int
      * @return long
@@ -266,17 +227,17 @@ public class MotionStatisticService {
     }
 
     /**
-     * calculate energy consumption
+     * 根据外力作功的物理学公式计算卡路里消耗(单位:cal)
      *
      * @param weight float
      * @return float
      */
-    private float calculateEnergyConsumption(float weight, float t) {
-        return (float) ((float) (1 / 4) * (float) (0.014 * weight * 9.8 * (accelerationMax - accelerationMin) * (float) (t * t)) / 4.18);
+    private float calculateEnergyConsumption(float weight, float acceleration, float t) {
+        return (float) ((float) (1.0 / 4.0) * (float) (0.014 * weight * 9.8 * acceleration * t * t) / 4.18);
     }
 
     /**
-     * calculate falling total count
+     * 计算跌倒总次数(单位:次)
      *
      * @return int
      */
@@ -292,7 +253,7 @@ public class MotionStatisticService {
     }
 
     /**
-     * calculate average falling time
+     * 计算平均跌倒时间(单位:s)
      *
      * @return float
      */
@@ -310,7 +271,7 @@ public class MotionStatisticService {
     }
 
     /**
-     * calculate movement completion
+     * 计算运动完成量(单位:步)
      *
      * @return long
      */
@@ -323,7 +284,7 @@ public class MotionStatisticService {
     }
 
     /**
-     * calculate total steps
+     * 合并跑步和行走的步数(单位:步)
      *
      * @return Map<Time,Double>
      */
@@ -341,7 +302,7 @@ public class MotionStatisticService {
     }
 
     /**
-     * calculate total caloriesData
+     * 合并跑步和行走的卡路里消耗(单位:cal)
      *
      * @return Map<Time,Double>
      */

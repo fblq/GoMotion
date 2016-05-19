@@ -3,29 +3,32 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-
               android:background="#00ff">
 
 
     <fragment
             android:id="@+id/monitorFragment"
             android:layout_width="match_parent"
-            android:layout_height="350dp"
+            android:layout_height="360dp"
             class="com.campus.gomotion.fragment.MonitorFragment"/>
-    <TableLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal" android:id="@+id/fallingDetail">
-        <TableRow>
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/fallingTime"/>
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/interval"/>
-        </TableRow>
-    </TableLayout>
-
+    <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/scrollView" android:layout_gravity="center_horizontal">
+        <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" android:id="@+id/fallingDetail">
+            <TableRow>
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/fallingTime"/>
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/interval"/>
+            </TableRow>
+        </TableLayout>
+    </ScrollView>
 </LinearLayout>

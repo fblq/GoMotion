@@ -1,9 +1,10 @@
 package com.campus.gomotion.activity;
 
 /**
- * Created by lenovo on 2016/5/15.
+ * Author: zhong.zhou
+ * Date: 16/5/9
+ * Email: muxin_zg@163.com
  */
-
 
 import java.text.DecimalFormat;
 

@@ -3,14 +3,13 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-
               android:background="#00ff">
 
 
     <fragment
             android:id="@+id/assessFragment"
             android:layout_width="match_parent"
-            android:layout_height="350dp"
+            android:layout_height="360dp"
             class="com.campus.gomotion.fragment.EvaluateFragment"/>
     <TableLayout
             android:layout_width="wrap_content"

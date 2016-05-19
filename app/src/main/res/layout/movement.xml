@@ -1,0 +1,140 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#00ff"
+              android:orientation="vertical" android:weightSum="1">
+    <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:background="@drawable/list_item_selected"
+            android:orientation="vertical">
+        <RadioGroup
+                android:id="@+id/tab_group"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:orientation="horizontal">
+
+            <RadioButton
+                    android:id="@+id/step"
+                    android:layout_height="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_weight="1.0"
+                    android:layout_marginLeft="100dp"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:textSize="14sp"
+                    android:checked="true"
+
+            />
+            <RadioButton
+                    android:id="@+id/calories"
+                    android:layout_height="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_weight="1.0"
+                    android:gravity="center_horizontal|center_vertical"
+                    android:textSize="14sp"
+                    android:checked="false"/>
+
+        </RadioGroup>
+        <TextView
+                android:id="@+id/textView5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="3dp"
+                android:text="步数                          卡路里"
+
+                android:textSize="15sp"
+                android:textColor="#FFFFF0"/>
+
+    </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+            android:id="@+id/mainviewpager"
+            android:layout_width="match_parent"
+            android:layout_height="360dp" android:layout_weight="0.18"/>
+    <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+        <TableRow>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/type"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/distance"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/steps"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/calorie"/>
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/walking"/>
+            <TextView
+                    android:id="@+id/walkTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" android:gravity="center_horizontal"/>
+            <TextView
+                    android:id="@+id/walkDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" android:gravity="center_horizontal"/>
+            <TextView
+                    android:id="@+id/walkSteps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" android:gravity="center_horizontal"/>
+            <TextView
+                    android:id="@+id/walkCalorie"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" android:gravity="center_horizontal"/>
+
+        </TableRow>
+        <TableRow>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/running"/>
+            <TextView
+                    android:id="@+id/runTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" android:gravity="center_horizontal"/>
+            <TextView
+                    android:id="@+id/runDistance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" android:gravity="center_horizontal"/>
+            <TextView
+                    android:id="@+id/runSteps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" android:gravity="center_horizontal"/>
+            <TextView
+                    android:id="@+id/runCalorie"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0" android:gravity="center_horizontal"/>
+
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>

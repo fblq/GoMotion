@@ -40,6 +40,7 @@ public class StepChart extends AbstractDemoChart {
         List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
         Map<Time, Double> stepMap = MotionStatisticService.calculateTotalStep();
+        int xStart = (int) TypeConvertUtil.timeToDouble((Time) stepMap.keySet().toArray()[0]);
         int size = stepMap.size();
         double[] time = new double[size];
         double[] steps = new double[size];
@@ -58,17 +59,18 @@ public class StepChart extends AbstractDemoChart {
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
         renderer.setChartTitle("总步数");
         renderer.setChartTitleTextSize(60);
+        renderer.setAxisTitleTextSize(40);
+        renderer.setLabelsTextSize(20);
         renderer.setXTitle("时间(hh:mm:ss)");
         renderer.setYTitle("步数(步)");
-        renderer.setAxisTitleTextSize(40);
         renderer.setLabelsColor(Color.GREEN);
         renderer.setAxesColor(Color.BLUE);
-        renderer.setXLabels(24);
-        renderer.setXAxisMin(0);
-        renderer.setXAxisMax(12);
-        renderer.setYLabels(10);
+        renderer.setXLabels(20);
+        renderer.setXAxisMin(xStart);
+        renderer.setXAxisMax(xStart + 0.2);
+        renderer.setYLabels(12);
         renderer.setYAxisMin(0);
-        renderer.setYAxisMax(1000);
+        renderer.setYAxisMax(120);
         return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }
