@@ -3,7 +3,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:background="#00ff">
+              android:background="#ffffff">
 
 
     <fragment
@@ -19,22 +19,26 @@
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/completion"/>
             <TextView
                     android:id="@+id/completion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0"/>
         </TableRow>
         <TableRow>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/selfEvaluation"/>
             <TextView
                     android:id="@+id/selfEvaluation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0"/>
         </TableRow>
     </TableLayout>

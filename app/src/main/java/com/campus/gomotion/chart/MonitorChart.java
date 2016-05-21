@@ -42,9 +42,12 @@ public class MonitorChart extends AbstractDemoChart {
         String[] titles = new String[]{"跌倒监测"};
         List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
+        int xStart = 0;
         Map<Time, Falling> fallingMap = MotionStatisticService.fallingMap;
-        int xStart = (int) TypeConvertUtil.timeToDouble((Time) fallingMap.keySet().toArray()[0]);
         int size = fallingMap.size();
+        if (size > 0) {
+            xStart = (int) TypeConvertUtil.timeToDouble((Time) fallingMap.keySet().toArray()[0]);
+        }
         double[] time = new double[size];
         double[] fallingCount = new double[size];
         Iterator<Time> iterator = fallingMap.keySet().iterator();

@@ -42,9 +42,12 @@ public class CaloriesChart extends AbstractDemoChart {
         String[] titles = new String[]{"卡路里"};
         List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
+        int xStart = 0;
         Map<Time, Double> caloriesMap = MotionStatisticService.calculateTotalCalories();
-        int xStart = (int) TypeConvertUtil.timeToDouble((Time) caloriesMap.keySet().toArray()[0]);
         int size = caloriesMap.size();
+        if (size > 0) {
+            xStart = (int) TypeConvertUtil.timeToDouble((Time) caloriesMap.keySet().toArray()[0]);
+        }
         double[] time = new double[size];
         double[] calories = new double[size];
         Iterator<Time> iterator = caloriesMap.keySet().iterator();

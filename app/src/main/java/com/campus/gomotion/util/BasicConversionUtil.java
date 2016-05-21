@@ -14,7 +14,7 @@ public class BasicConversionUtil {
      * @return short
      */
     public static short combine(byte a, byte b) {
-        return (short) ((short) (a << 8) | (short) b);
+        return (short) (((short) ((short) a << 8)) | (short) b);
     }
 
     /**
@@ -24,6 +24,6 @@ public class BasicConversionUtil {
      * @return float
      */
     public static float fixedToFloat(short fixedValue) {
-        return (float) ((float) fixedValue / (float) (1 << 15));
+        return ((float) (fixedValue) / (float) (1 << (15)));
     }
 }

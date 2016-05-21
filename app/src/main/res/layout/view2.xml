@@ -33,11 +33,13 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="#000000"
                         android:text="跌倒总次数"/>
                 <TextView
                         android:id="@+id/fallingCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="#000000"
                         android:text="0"/>
 
             </TableRow>
@@ -45,11 +47,13 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="#000000"
                         android:text="平均耗时(s)"/>
                 <TextView
                         android:id="@+id/averageTime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="#000000"
                         android:text="0"/>
             </TableRow>
         </TableLayout>

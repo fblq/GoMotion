@@ -34,7 +34,7 @@ public class PhysicalConversionUtil {
      * @param attitudeAngle AttitudeAngle
      * @return float
      */
-    /*public static float calculateGeometricMeanAcceleration(AttitudeAngle attitudeAngle) {
+    public static float calculateGeometricMeanAcceleration(AttitudeAngle attitudeAngle) {
         float roll = attitudeAngle.getRoll();
         float pitch = attitudeAngle.getPitch();
         float yaw = attitudeAngle.getYaw();
@@ -42,7 +42,7 @@ public class PhysicalConversionUtil {
         float ay = (float) (Math.sin(roll) * Math.cos(pitch));
         float az = (float) (Math.cos(roll) * Math.cos(pitch));
         return (float) Math.sqrt((double) (ax * ax + ay * ay + az * az) / (double) (3));
-    }*/
+    }
 
     /**
      * calculate geometric mean acceleration on the basis of accelerometer

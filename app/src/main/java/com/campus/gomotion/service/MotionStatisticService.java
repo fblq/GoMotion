@@ -1,12 +1,10 @@
 package com.campus.gomotion.service;
 
+import android.util.Log;
 import com.campus.gomotion.constant.UserInfo;
 import com.campus.gomotion.kind.Falling;
 import com.campus.gomotion.kind.Moving;
-import com.campus.gomotion.sensorData.Accelerometer;
-import com.campus.gomotion.sensorData.AttitudeAngle;
-import com.campus.gomotion.sensorData.DataPack;
-import com.campus.gomotion.sensorData.Quaternion;
+import com.campus.gomotion.sensorData.*;
 import com.campus.gomotion.util.PhysicalConversionUtil;
 
 import java.sql.Time;
@@ -43,94 +41,68 @@ public class MotionStatisticService {
      */
     private static boolean isFall = false;
 
-    /**
-     * 更新加速度几何均值的峰值点(10s一次)
-     *
-     * @param dataPack DataPack
-     * @return boolean
-     */
-    private boolean updateExtremum(DataPack dataPack) {
-        float interPoint = 0, endPoint = 0, accelerationMin = 0, accelerationMax = 0;
-        int stepCount = 0, t = 0;
-        boolean flag = false;
-        AttitudeAngle attitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(dataPack.getQuaternion());
-        float temp = PhysicalConversionUtil.calculateGeometricMeanAcceleration(dataPack.getAccelerometer());
-        if (interPoint < endPoint && interPoint < temp) {
-            accelerationMin = interPoint;
-            flag = true;
-        } else if (interPoint > endPoint && interPoint > temp) {
-            accelerationMax = interPoint;
-            flag = true;
-        }
-        endPoint = interPoint;
-        interPoint = temp;
-        stepCount++;
-        t++;
-        interval++;
-        return flag;
-    }
-
     public void motionStatistic(ArrayDeque<DataPack> dataPacks) {
-        Quaternion tailQuaternion = dataPacks.getLast().getQuaternion();
         Quaternion frontQuaternion = dataPacks.getFirst().getQuaternion();
+        Quaternion tailQuaternion = dataPacks.getLast().getQuaternion();
+        AngularVelocity frontAngularVelocity = dataPacks.getFirst().getAngularVelocity();
+        AngularVelocity tailAngularVelocity = dataPacks.getLast().getAngularVelocity();
         AttitudeAngle tailAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(tailQuaternion);
         AttitudeAngle frontAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(frontQuaternion);
         float tailYaw = tailAttitudeAngle.getYaw();
         float tailPitch = tailAttitudeAngle.getPitch();
-        float tailRoll = tailAttitudeAngle.getRoll();
         float frontYaw = frontAttitudeAngle.getYaw();
         float frontPitch = frontAttitudeAngle.getPitch();
-        float frontRoll = frontAttitudeAngle.getRoll();
 
         float averageAcceleration = averageAcceleration(dataPacks);
         /**
-         * 跌倒情况
+         * 排除静止情况
          */
-        if (frontYaw > 30 || frontYaw < -30 || frontPitch > 45 || frontPitch < -30) {
-            if (tailYaw > 30 || tailYaw < -30 || tailPitch > 45 || tailPitch < -30) {
-                falling.increase();
-                isFall = true;
+        if (!isStill(frontAngularVelocity, tailAngularVelocity)) {
+            /**
+             * 跌倒情况
+             */
+            if (frontYaw > 30 || frontYaw < -30 || frontPitch > 45 || frontPitch < -30) {
+                if (tailYaw > 30 || tailYaw < -30 || tailPitch > 45 || tailPitch < -30) {
+                    falling.increase();
+                    isFall = true;
+                }
             }
-        }
-        if (isFall) {
-            long t = System.currentTimeMillis();
-            Time time = new Time(t);
-            fallingLog.put(time, (float) (interval));
-            isFall = false;
-        }
-        interval++;
-        long time = 1;
-        float distance = calculateDistance(averageAcceleration, time);
-        float energyConsumption = calculateEnergyConsumption(UserInfo.WEIGHT, averageAcceleration, time);
-        /**
-         * 正常行走/静止情况
-         */
-        if (frontYaw > -10 && frontYaw < 10 && frontPitch > -10 && frontPitch < 10) {
-            if (tailYaw > -10 && tailYaw < 10 && tailYaw > -10 && tailYaw < 10) {
-                Moving moving = new Moving(time, distance, 1, energyConsumption);
-                walking.add(moving);
-                totalWalking.add(moving);
-                /*if (averageAcceleration > 1 && averageAcceleration < 2) {
-                    Moving moving = new Moving(time, distance, 1, energyConsumption);
-                    walking.add(moving);
-                    totalWalking.add(moving);
-                }*/
+            if (isFall) {
+                long t = System.currentTimeMillis();
+                Time time = new Time(t);
+                fallingLog.put(time, (float) (interval));
+                isFall = false;
             }
-        }
-        /**
-         * 正常跑步情况
-         */
-        if ((frontYaw > 10 && frontYaw < 30) || (frontYaw > -30 && frontYaw < -10) || (frontPitch > 10 && frontPitch < 45) || (frontPitch > -30 && frontPitch < -10)) {
-            if ((tailYaw > 10 && tailYaw < 30) || (tailYaw > -30 && tailYaw < -10) || (tailPitch > 10 && tailPitch < 45) || (tailPitch > -30 && tailPitch < -10)) {
-                Moving moving = new Moving(time, distance, 1, energyConsumption);
-                running.add(moving);
-                totalRunning.add(moving);
-               /* if (averageAcceleration > 2) {
-                    Moving moving = new Moving(time, distance, 1, energyConsumption);
-                    running.add(moving);
-                    totalRunning.add(moving);
-                }*/
+            interval++;
+            long time = 1;
+            float distance = calculateDistance(averageAcceleration, time);
+            float energyConsumption = calculateEnergyConsumption(UserInfo.WEIGHT, averageAcceleration, time);
+            /**
+             * 正常行走
+             */
+            if (frontYaw > -10 && frontYaw < 10 && frontPitch > -10 && frontPitch < 10) {
+                if (tailYaw > -10 && tailYaw < 10 && tailYaw > -10 && tailYaw < 10) {
+                    if (averageAcceleration > 1 && averageAcceleration < 3) {
+                        Moving moving = new Moving(time, distance, 1, energyConsumption);
+                        walking.add(moving);
+                        totalWalking.add(moving);
+                    }
+                }
             }
+            /**
+             * 正常跑步情况
+             */
+            if ((frontYaw > 10 && frontYaw < 30) || (frontYaw > -30 && frontYaw < -10) || (frontPitch > 10 && frontPitch < 45) || (frontPitch > -30 && frontPitch < -10)) {
+                if ((tailYaw > 10 && tailYaw < 30) || (tailYaw > -30 && tailYaw < -10) || (tailPitch > 10 && tailPitch < 45) || (tailPitch > -30 && tailPitch < -10)) {
+                    if (averageAcceleration > 3) {
+                        Moving moving = new Moving(time, distance, 1, energyConsumption);
+                        running.add(moving);
+                        totalRunning.add(moving);
+                    }
+                }
+            }
+        } else {
+            Log.v(TAG, "静止状态");
         }
     }
 
@@ -179,21 +151,48 @@ public class MotionStatisticService {
     }
 
     /**
+     * 判断加速度数据是否合理
+     *
+     * @param accelerometer Accelerometer
+     * @return boolean
+     */
+    private boolean isUsualAcceleration(Accelerometer accelerometer) {
+        float x = accelerometer.getX();
+        float y = accelerometer.getY();
+        float z = accelerometer.getZ();
+        return (x * x + y * y + z * z) >= 1;
+    }
+
+    /**
      * 计算1s内的平均加速度(单位:N/s)
      *
      * @param dataPacks DataPack[]
      * @return float
      */
     private float averageAcceleration(ArrayDeque<DataPack> dataPacks) {
-        float sum = 0, i, temp;
+        float sum = 0, i = 0, temp;
         Accelerometer acceleration;
-        i = dataPacks.size();
         for (DataPack dataPack : dataPacks) {
             acceleration = dataPack.getAccelerometer();
-            temp = PhysicalConversionUtil.calculateGeometricMeanAcceleration(acceleration);
-            sum += temp;
+            if (isUsualAcceleration(acceleration)) {
+                temp = PhysicalConversionUtil.calculateGeometricMeanAcceleration(acceleration);
+                sum += temp;
+                i++;
+            }
         }
         return (sum / i);
+    }
+
+    private boolean isStill(AngularVelocity frontAngularVelocity, AngularVelocity tailAngularVelocity) {
+        float frontAngularX = frontAngularVelocity.getX();
+        float frontAngularY = frontAngularVelocity.getY();
+        float frontAngularZ = frontAngularVelocity.getZ();
+        float tailAngularX = tailAngularVelocity.getX();
+        float tailAngularY = tailAngularVelocity.getY();
+        float tailAngularZ = tailAngularVelocity.getZ();
+        return ((frontAngularX > -0.5) && (frontAngularX < 0.5) || (frontAngularY > -0.5) && (frontAngularY < 0.5)
+                || (frontAngularZ > -0.5) && (frontAngularZ < 0.5) || (tailAngularX > -0.5) && (tailAngularX < 0.5)
+                || (tailAngularY > -0.5) && (tailAngularY < 0.5) || (tailAngularZ > -0.5) && (tailAngularZ < 0.1));
     }
 
     /**

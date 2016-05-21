@@ -1,9 +1,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:background="#00ff"
-              android:orientation="vertical" android:weightSum="1">
+              android:orientation="vertical"
+              android:background="#ffffff"
+              android:weightSum="1">
     <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -44,7 +44,6 @@
                 android:gravity="center"
                 android:padding="3dp"
                 android:text="步数                          卡路里"
-
                 android:textSize="15sp"
                 android:textColor="#FFFFF0"/>
 
@@ -53,7 +52,7 @@
     <android.support.v4.view.ViewPager
             android:id="@+id/mainviewpager"
             android:layout_width="match_parent"
-            android:layout_height="360dp" android:layout_weight="0.18"/>
+            android:layout_height="360dp"/>
     <TableLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,22 +61,27 @@
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/type"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/time"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/distance"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/steps"/>
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/calorie"/>
         </TableRow>
 
@@ -85,26 +89,31 @@
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/walking"/>
             <TextView
                     android:id="@+id/walkTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0" android:gravity="center_horizontal"/>
             <TextView
                     android:id="@+id/walkDistance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0" android:gravity="center_horizontal"/>
             <TextView
                     android:id="@+id/walkSteps"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0" android:gravity="center_horizontal"/>
             <TextView
                     android:id="@+id/walkCalorie"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0" android:gravity="center_horizontal"/>
 
         </TableRow>
@@ -112,26 +121,31 @@
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="@string/running"/>
             <TextView
                     android:id="@+id/runTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0" android:gravity="center_horizontal"/>
             <TextView
                     android:id="@+id/runDistance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0" android:gravity="center_horizontal"/>
             <TextView
                     android:id="@+id/runSteps"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0" android:gravity="center_horizontal"/>
             <TextView
                     android:id="@+id/runCalorie"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="#000000"
                     android:text="0" android:gravity="center_horizontal"/>
 
         </TableRow>

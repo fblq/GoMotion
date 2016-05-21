@@ -39,9 +39,12 @@ public class StepChart extends AbstractDemoChart {
         String[] titles = new String[]{"步数"};
         List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
+        int xStart = 0;
         Map<Time, Double> stepMap = MotionStatisticService.calculateTotalStep();
-        int xStart = (int) TypeConvertUtil.timeToDouble((Time) stepMap.keySet().toArray()[0]);
         int size = stepMap.size();
+        if (size > 0) {
+            xStart = (int) TypeConvertUtil.timeToDouble((Time) stepMap.keySet().toArray()[0]);
+        }
         double[] time = new double[size];
         double[] steps = new double[size];
         Iterator<Time> iterator = stepMap.keySet().iterator();

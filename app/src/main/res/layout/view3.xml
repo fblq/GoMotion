@@ -28,24 +28,28 @@
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="#000000"
                         android:text="目标步数"/>
                 <EditText
                         android:id="@+id/movingTarget"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:inputType="number"
+                        android:textColor="#000000"
                         android:hint="默认10000"/>
             </TableRow>
             <TableRow>
                 <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textColor="#000000"
                         android:text="体力感觉"/>
                 <EditText
                         android:id="@+id/selfEvaluation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:inputType="number"
+                        android:textColor="#000000"
                         android:hint="适中:50 疲惫:100"/>
                 <Button
                         android:id="@+id/assess"
@@ -53,6 +57,7 @@
                         android:layout_height="50dp"
                         android:text="图表显示"
                         android:textSize="12sp"
+                        android:textColor="#000000"
                         android:background="@drawable/bigbutton2" android:layout_gravity="left|center"
                 />
             </TableRow>

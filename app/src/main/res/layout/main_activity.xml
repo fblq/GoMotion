@@ -22,16 +22,17 @@
             </TabWidget>
             <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:orientation="horizontal">
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal" android:weightSum="1">
 
                 <Switch
-                        android:layout_width="120dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="fill_parent"
                         android:text="热点通信"
                         android:id="@+id/communication"
                         android:layout_marginRight="30dp"
                         android:textColor="#000000"
+                        android:textSize="20sp"
                         android:textOff="OFF"
                         android:textOn="ON"
                         android:checked="false"
