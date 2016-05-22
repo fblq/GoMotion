@@ -1,6 +1,11 @@
 package com.campus.gomotion.service;
 
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.provider.ContactsContract;
 import android.util.Log;
+import com.campus.gomotion.constant.UIData;
 import com.campus.gomotion.constant.UserInfo;
 import com.campus.gomotion.kind.Falling;
 import com.campus.gomotion.kind.Moving;
@@ -32,6 +37,11 @@ public class MotionStatisticService {
     private static Moving walking = new Moving();
 
     /**
+     * handle message
+     */
+    private Handler handler;
+
+    /**
      * 跌倒到爬起来的时间计量
      */
     private static int interval = 0;
@@ -41,31 +51,29 @@ public class MotionStatisticService {
      */
     private static boolean isFall = false;
 
-    public void motionStatistic(ArrayDeque<DataPack> dataPacks) {
-        Quaternion frontQuaternion = dataPacks.getFirst().getQuaternion();
-        Quaternion tailQuaternion = dataPacks.getLast().getQuaternion();
-        AngularVelocity frontAngularVelocity = dataPacks.getFirst().getAngularVelocity();
-        AngularVelocity tailAngularVelocity = dataPacks.getLast().getAngularVelocity();
-        AttitudeAngle tailAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(tailQuaternion);
-        AttitudeAngle frontAttitudeAngle = PhysicalConversionUtil.quaternionToAttitudeAngle(frontQuaternion);
-        float tailYaw = tailAttitudeAngle.getYaw();
-        float tailPitch = tailAttitudeAngle.getPitch();
-        float frontYaw = frontAttitudeAngle.getYaw();
-        float frontPitch = frontAttitudeAngle.getPitch();
+    public MotionStatisticService(Handler handler) {
+        this.handler = handler;
+    }
 
+    public void motionStatistic(ArrayDeque<DataPack> dataPacks) {
         float averageAcceleration = averageAcceleration(dataPacks);
+        float averageAngular = averageAngular(dataPacks);
+        /**
+         * 对采集的数据进行分析,得出以下规律
+         * 当合力加速度的均值小于1.2时,处于静止状态,当合力加速的的均值大于1且小于2时,处于
+         * 行走状态,当合力加速度的均值大于2时,处于跑步状态.
+         * 当合力角速度的均值小于10时,处于静止状态,当合力角速度的均值大于20时,处于行走或跑步状态
+         */
         /**
          * 排除静止情况
          */
-        if (!isStill(frontAngularVelocity, tailAngularVelocity)) {
+        if (averageAngular < 1 || averageAcceleration > 1.2) {
             /**
              * 跌倒情况
              */
-            if (frontYaw > 30 || frontYaw < -30 || frontPitch > 45 || frontPitch < -30) {
-                if (tailYaw > 30 || tailYaw < -30 || tailPitch > 45 || tailPitch < -30) {
-                    falling.increase();
-                    isFall = true;
-                }
+            if (isFalling(dataPacks)) {
+                falling.increase();
+                isFall = true;
             }
             if (isFall) {
                 long t = System.currentTimeMillis();
@@ -77,33 +85,46 @@ public class MotionStatisticService {
             long time = 1;
             float distance = calculateDistance(averageAcceleration, time);
             float energyConsumption = calculateEnergyConsumption(UserInfo.WEIGHT, averageAcceleration, time);
+            boolean isRun = isLargeAngularHighFrequency(dataPacks);
             /**
              * 正常行走
              */
-            if (frontYaw > -10 && frontYaw < 10 && frontPitch > -10 && frontPitch < 10) {
-                if (tailYaw > -10 && tailYaw < 10 && tailYaw > -10 && tailYaw < 10) {
-                    if (averageAcceleration > 1 && averageAcceleration < 3) {
-                        Moving moving = new Moving(time, distance, 1, energyConsumption);
-                        walking.add(moving);
-                        totalWalking.add(moving);
-                    }
-                }
+            if (!isRun || averageAcceleration < 2) {
+                Moving moving = new Moving(time, distance, 2, energyConsumption);
+                walking.add(moving);
+                totalWalking.add(moving);
             }
             /**
              * 正常跑步情况
              */
-            if ((frontYaw > 10 && frontYaw < 30) || (frontYaw > -30 && frontYaw < -10) || (frontPitch > 10 && frontPitch < 45) || (frontPitch > -30 && frontPitch < -10)) {
-                if ((tailYaw > 10 && tailYaw < 30) || (tailYaw > -30 && tailYaw < -10) || (tailPitch > 10 && tailPitch < 45) || (tailPitch > -30 && tailPitch < -10)) {
-                    if (averageAcceleration > 3) {
-                        Moving moving = new Moving(time, distance, 1, energyConsumption);
-                        running.add(moving);
-                        totalRunning.add(moving);
-                    }
-                }
+            if (isRun || (averageAcceleration > 2 && averageAcceleration < 4)) {
+                Moving moving = new Moving(time, distance, 4, energyConsumption);
+                running.add(moving);
+                totalRunning.add(moving);
             }
         } else {
             Log.v(TAG, "静止状态");
         }
+        Message message = handler.obtainMessage();
+        Bundle bundle = new Bundle();
+        if (totalWalking != null) {
+            bundle.putString(UIData.RUN_TIME, String.valueOf((int) (totalWalking.getTime() / 60)));
+            bundle.putString(UIData.RUN_DISTANCE, String.valueOf(totalWalking.getDistance()));
+        } else {
+            bundle.putString(UIData.RUN_TIME, "0");
+            bundle.putString(UIData.RUN_DISTANCE, "0");
+        }
+        if (totalWalking != null) {
+            bundle.putString(UIData.WALK_TIME, String.valueOf((int) (totalRunning.getTime() / 60)));
+            bundle.putString(UIData.WALK_DISTANCE, String.valueOf(totalRunning.getDistance()));
+        } else {
+            bundle.putString(UIData.WALK_TIME, "0");
+            bundle.putString(UIData.WALK_DISTANCE, "0");
+        }
+        bundle.putString(UIData.FALLING_COUNT, String.valueOf(calculateFallingTotalCount()));
+        bundle.putString(UIData.FALLING_AVERAGE_TIME, String.valueOf(calculateAverageFallingTime()));
+        message.setData(bundle);
+        handler.sendMessage(message);
     }
 
     /**
@@ -151,48 +172,89 @@ public class MotionStatisticService {
     }
 
     /**
-     * 判断加速度数据是否合理
+     * 计算1s内的合力加速度均值(单位:N/s)
      *
-     * @param accelerometer Accelerometer
-     * @return boolean
-     */
-    private boolean isUsualAcceleration(Accelerometer accelerometer) {
-        float x = accelerometer.getX();
-        float y = accelerometer.getY();
-        float z = accelerometer.getZ();
-        return (x * x + y * y + z * z) >= 1;
-    }
-
-    /**
-     * 计算1s内的平均加速度(单位:N/s)
-     *
-     * @param dataPacks DataPack[]
+     * @param dataPacks ArrayDeque<DataPack>
      * @return float
      */
     private float averageAcceleration(ArrayDeque<DataPack> dataPacks) {
         float sum = 0, i = 0, temp;
         Accelerometer acceleration;
-        for (DataPack dataPack : dataPacks) {
-            acceleration = dataPack.getAccelerometer();
-            if (isUsualAcceleration(acceleration)) {
+        if (dataPacks != null && dataPacks.size() > 0) {
+            for (DataPack dataPack : dataPacks) {
+                acceleration = dataPack.getAccelerometer();
                 temp = PhysicalConversionUtil.calculateGeometricMeanAcceleration(acceleration);
                 sum += temp;
                 i++;
             }
+            return (sum / i);
+        } else {
+            return 0;
         }
-        return (sum / i);
     }
 
-    private boolean isStill(AngularVelocity frontAngularVelocity, AngularVelocity tailAngularVelocity) {
-        float frontAngularX = frontAngularVelocity.getX();
-        float frontAngularY = frontAngularVelocity.getY();
-        float frontAngularZ = frontAngularVelocity.getZ();
-        float tailAngularX = tailAngularVelocity.getX();
-        float tailAngularY = tailAngularVelocity.getY();
-        float tailAngularZ = tailAngularVelocity.getZ();
-        return ((frontAngularX > -0.5) && (frontAngularX < 0.5) || (frontAngularY > -0.5) && (frontAngularY < 0.5)
-                || (frontAngularZ > -0.5) && (frontAngularZ < 0.5) || (tailAngularX > -0.5) && (tailAngularX < 0.5)
-                || (tailAngularY > -0.5) && (tailAngularY < 0.5) || (tailAngularZ > -0.5) && (tailAngularZ < 0.1));
+    /**
+     * 计算1s内的合力角速度均值(单位:N/s)
+     *
+     * @param dataPacks ArrayDeque<DataPack>
+     * @return float
+     */
+    private float averageAngular(ArrayDeque<DataPack> dataPacks) {
+        float sum = 0, i = 0, temp;
+        AngularVelocity angularVelocity;
+        if (dataPacks != null && dataPacks.size() > 0) {
+            for (DataPack dataPack : dataPacks) {
+                angularVelocity = dataPack.getAngularVelocity();
+                temp = PhysicalConversionUtil.calculateGeometricMeanAngular(angularVelocity);
+                sum += temp;
+                i++;
+            }
+            return (sum / i);
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * 计算1s内合力角速度大于100的次数
+     *
+     * @param dataPacks ArrayDeque<DataPack>
+     * @return boolean
+     */
+    private boolean isLargeAngularHighFrequency(ArrayDeque<DataPack> dataPacks) {
+        int count = 0;
+        float temp;
+        if (dataPacks != null && dataPacks.size() > 0) {
+            for (DataPack dataPack : dataPacks) {
+                temp = PhysicalConversionUtil.calculateGeometricMeanAngular(dataPack.getAngularVelocity());
+                if (temp > 100) {
+                    count++;
+                }
+            }
+            return count > dataPacks.size() - 10;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean isFalling(ArrayDeque<DataPack> dataPacks) {
+        float temp1, temp2;
+        int count1 = 0, count2 = 0;
+        if (dataPacks != null && dataPacks.size() > 0) {
+            for (DataPack dataPack : dataPacks) {
+                temp1 = PhysicalConversionUtil.calculateGeometricMeanAcceleration(dataPack.getAccelerometer());
+                temp2 = PhysicalConversionUtil.calculateGeometricMeanAngular(dataPack.getAngularVelocity());
+                if (temp1 > 3.5) {
+                    count1++;
+                }
+                if (temp2 > 400) {
+                    count2++;
+                }
+            }
+            return ((count1 > 0 && count1 < 3) || (count2 > 0 && count2 < 3));
+        } else {
+            return false;
+        }
     }
 
     /**

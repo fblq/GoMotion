@@ -13,23 +13,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import com.campus.gomotion.R;
+import com.campus.gomotion.constant.UIData;
 import com.campus.gomotion.constant.WifiApInfo;
-import com.campus.gomotion.sensorData.AttitudeAngle;
 import com.campus.gomotion.sensorData.DataPack;
-import com.campus.gomotion.sensorData.Quaternion;
+import com.campus.gomotion.service.ChannelListenerService;
 import com.campus.gomotion.service.MotionStatisticService;
-import com.campus.gomotion.service.PortListenerService;
 import com.campus.gomotion.service.SynchronizeService;
 import com.campus.gomotion.service.WifiApService;
-import com.campus.gomotion.util.FileUtil;
+import com.campus.gomotion.util.BasicConversionUtil;
 import com.campus.gomotion.util.PhysicalConversionUtil;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
-import java.util.StringTokenizer;
+import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.*;
@@ -159,8 +157,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
          */
         synchronizeSwitch.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
             private ExecutorService executor = Executors.newSingleThreadExecutor();
-            private PortListenerService portListenerService = new PortListenerService(WifiApInfo.SERVICE_SPORT, handler);
-            private FutureTask<String> futureTask = new FutureTask<>(portListenerService);
+            private ChannelListenerService channelListenerService = new ChannelListenerService(WifiApInfo.SERVICE_SPORT, handler);
+            private FutureTask<String> futureTask = new FutureTask<>(channelListenerService);
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -168,8 +166,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     executor = Executors.newSingleThreadExecutor();
                 }
                 if (futureTask.isCancelled()) {
-                    portListenerService = new PortListenerService(WifiApInfo.SERVICE_SPORT, handler);
-                    futureTask = new FutureTask<>(portListenerService);
+                    channelListenerService = new ChannelListenerService(WifiApInfo.SERVICE_SPORT, handler);
+                    futureTask = new FutureTask<>(channelListenerService);
                 }
                 if (isChecked) {
                     if (wifiSpotSwitch != null && !wifiSpotSwitch.isChecked()) {
@@ -182,7 +180,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     /**
                      * interrupt the listen service
                      */
-                    portListenerService.closeServerSocket();
+                    channelListenerService.closeServerSocket();
                     if (futureTask.cancel(true)) {
                         Log.v(TAG, "cancel listen service succeed");
                     } else {
@@ -197,7 +195,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             public void run() {
                 FileWriter fileWriter = null;
                 PrintWriter printWriter = null;
-                MotionStatisticService motionStatisticService = new MotionStatisticService();
+                MotionStatisticService motionStatisticService = new MotionStatisticService(handler);
                 try {
                     fileWriter = new FileWriter(file);
                     printWriter = new PrintWriter(fileWriter);
@@ -259,17 +257,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onStart() {
         super.onStart();
-        if (MotionStatisticService.totalWalking != null) {
-            walkTime.setText(String.valueOf(MotionStatisticService.totalWalking.getTime() / 60));
-            walkDistance.setText(String.valueOf(MotionStatisticService.totalWalking.getDistance()));
-        }
-        if (MotionStatisticService.totalRunning != null) {
-            runTime.setText(String.valueOf(MotionStatisticService.totalRunning.getTime() / 60));
-            runDistance.setText(String.valueOf(MotionStatisticService.totalRunning.getDistance()));
-        }
-        fallingCount.setText(String.valueOf(MotionStatisticService.calculateFallingTotalCount()));
-        averageTime.setText(String.valueOf(MotionStatisticService.calculateAverageFallingTime()));
-
         target = movingTarget.getText().toString();
         if (!target.isEmpty()) {
             circleBar.setMaxstepnumber(Integer.parseInt(target));
@@ -284,7 +271,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
         evaluation = selfEvaluation.getText().toString();
         circleBar.update((int) currentCompletion, 800);
-        Log.v(TAG, "refresh ui succeed");
     }
 
     @Override
@@ -303,7 +289,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private void setTimerTask() {
-        final MotionStatisticService motionStatisticService = new MotionStatisticService();
+        final MotionStatisticService motionStatisticService = new MotionStatisticService(handler);
         TimerTask loadData = new TimerTask() {
             @Override
             public void run() {
@@ -345,12 +331,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         @Override
         public void handleMessage(Message msg) {
+            Bundle bundle = msg.getData();
+            if (bundle != null && bundle.size() > 0) {
+                walkTime.setText((String) bundle.get(UIData.WALK_TIME));
+                walkDistance.setText((String) bundle.get(UIData.WALK_DISTANCE));
+                runTime.setText((String) bundle.get(UIData.RUN_TIME));
+                runDistance.setText((String) bundle.get(UIData.RUN_DISTANCE));
+                fallingCount.setText((String) (bundle.get(UIData.FALLING_COUNT)));
+                averageTime.setText((String) (bundle.get(UIData.FALLING_AVERAGE_TIME)));
+            }
             if (textView.getLineCount() >= 20) {
                 textView.setText("");
             }
             if (msg.what == 0x12) {
                 textView.append(msg.obj.toString() + " ");
             }
+            Log.v(TAG, "refresh ui succeed");
         }
     }
 }

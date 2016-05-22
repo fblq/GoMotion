@@ -20,7 +20,7 @@ public class CommunicateService extends Service {
     private final static String TAG = "CommunicateService";
     private WifiApService wifiApService;
     private ExecutorService executorService;
-    private PortListenerService portListenerService;
+    private ChannelListenerService channelListenerService;
     private Handler handler; //可以让Activity传过来
 
     @Nullable
@@ -34,7 +34,7 @@ public class CommunicateService extends Service {
         super.onCreate();
         wifiApService = new WifiApService(this);
         executorService = Executors.newSingleThreadExecutor();
-        portListenerService = new PortListenerService(WifiApInfo.SERVICE_SPORT, handler);
+        channelListenerService = new ChannelListenerService(WifiApInfo.SERVICE_SPORT, handler);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class CommunicateService extends Service {
         if (wifiApService.createWifiAp(WifiApInfo.WIFI_AP_NAME, WifiApInfo.WIFI_AP_PASSWORD)) {
             Log.v(TAG, "createWifiAp succeed");
             executorService = Executors.newSingleThreadExecutor();
-            FutureTask<String> futureTask = new FutureTask<>(portListenerService);
+            FutureTask<String> futureTask = new FutureTask<>(channelListenerService);
             executorService.submit(futureTask);
             executorService.shutdown();
         } else {
@@ -53,8 +53,8 @@ public class CommunicateService extends Service {
 
     @Override
     public void onDestroy() {
-        portListenerService.closeServerSocket();
-        if(wifiApService.isWifiApEnabled()){
+        channelListenerService.closeServerSocket();
+        if (wifiApService.isWifiApEnabled()) {
             wifiApService.closeWifiAp();
         }
         super.onDestroy();

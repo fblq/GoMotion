@@ -1,6 +1,7 @@
 package com.campus.gomotion.util;
 
 import com.campus.gomotion.sensorData.Accelerometer;
+import com.campus.gomotion.sensorData.AngularVelocity;
 import com.campus.gomotion.sensorData.AttitudeAngle;
 import com.campus.gomotion.sensorData.Quaternion;
 
@@ -45,7 +46,7 @@ public class PhysicalConversionUtil {
     }
 
     /**
-     * calculate geometric mean acceleration on the basis of accelerometer
+     * calculate geometric mean acceleration
      *
      * @param accelerometer Accelerometer
      * @return float
@@ -54,6 +55,19 @@ public class PhysicalConversionUtil {
         float x = accelerometer.getX();
         float y = accelerometer.getY();
         float z = accelerometer.getZ();
+        return (float) Math.sqrt(x * x + y * y + z * z);
+    }
+
+    /**
+     * calculate geometric mean angularVelocity
+     *
+     * @param angularVelocity AngularVelocity
+     * @return float
+     */
+    public static float calculateGeometricMeanAngular(AngularVelocity angularVelocity) {
+        float x = angularVelocity.getX();
+        float y = angularVelocity.getY();
+        float z = angularVelocity.getZ();
         return (float) Math.sqrt(x * x + y * y + z * z);
     }
 }

@@ -1,23 +1,27 @@
 package com.campus.gomotion.service;
 
 import android.os.Handler;
+import android.telecom.Call;
 import android.util.Log;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
 /**
- * Author: zhong.zhou
- * Date: 16/4/23
- * Email: muxin_zg@163.com
+ * Author zhong.zhou
+ * Date 5/21/16
+ * Email qnarcup@gmail.com
  */
-public class PortListenerService implements Callable<String> {
-    private final static String TAG = "PortListenerService";
+public class ChannelListenerService implements Callable<String> {
+    private final static String TAG = "ChannelListenerService";
     /**
      * the port of service
      */
@@ -28,11 +32,11 @@ public class PortListenerService implements Callable<String> {
     /**
      * the server socket of service
      */
-    private ServerSocket serverSocket;
+    private ServerSocketChannel serverSocketChannel;
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public PortListenerService(int port, Handler handler) {
+    public ChannelListenerService(int port, Handler handler) {
         this.port = port;
         this.handler = handler;
     }
@@ -42,24 +46,25 @@ public class PortListenerService implements Callable<String> {
      */
     public void closeServerSocket() {
         try {
-            if (!serverSocket.isClosed()) {
-                serverSocket.close();
+            if (serverSocketChannel.isOpen()) {
+                serverSocketChannel.close();
             }
         } catch (IOException e) {
-            Log.v(TAG, "close server socket", e);
+            Log.v(TAG, "close server socket channel", e);
         }
     }
 
     @Override
     public String call() {
-        Socket socket = null;
+        SocketChannel socketChannel = null;
         SynchronizeService synchronizeService = null;
         FutureTask<String> futureTask = null;
         try {
-            serverSocket = new ServerSocket(port);
+            serverSocketChannel = ServerSocketChannel.open();
+            serverSocketChannel.socket().bind(new InetSocketAddress(port));
             while (true) {
-                socket = serverSocket.accept();
-                synchronizeService = new SynchronizeService(socket, handler);
+                socketChannel = serverSocketChannel.accept();
+                synchronizeService = new SynchronizeService(socketChannel, handler);
                 futureTask = new FutureTask<>(synchronizeService);
                 executorService.submit(futureTask);
                 Log.v(TAG, "start synchronize service");
@@ -74,11 +79,11 @@ public class PortListenerService implements Callable<String> {
                 if (executorService != null) {
                     executorService.shutdown();
                 }
-                if (serverSocket != null) {
-                    serverSocket.close();
+                if (serverSocketChannel != null) {
+                    serverSocketChannel.close();
                 }
-                if (socket != null && !socket.isClosed()) {
-                    socket.close();
+                if (socketChannel != null && socketChannel.isOpen()) {
+                    socketChannel.close();
                 }
                 if (futureTask != null) {
                     if (futureTask.cancel(true)) {
