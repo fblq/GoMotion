@@ -107,16 +107,22 @@ public class Movement extends Activity {
     protected void onStart() {
         super.onStart();
         if (MotionStatisticService.totalWalking != null) {
-            walkTime.setText(String.valueOf(MotionStatisticService.totalWalking.getTime() / 60));
-            walkDistance.setText(String.valueOf(MotionStatisticService.totalWalking.getDistance()));
+            float temp1 = (float) (Math.round(MotionStatisticService.totalWalking.getTime() / 60.0 * 100)) / 100;
+            float temp2 = (float) (Math.round(MotionStatisticService.totalWalking.getDistance() * 100)) / 100;
+            float temp3 = (float) (Math.round(MotionStatisticService.totalWalking.getEnergyConsumption() * 100)) / 100;
+            walkTime.setText(String.valueOf(temp1));
+            walkDistance.setText(String.valueOf(temp2));
             walkSteps.setText(String.valueOf(MotionStatisticService.totalWalking.getStep()));
-            walkCalories.setText(String.valueOf(MotionStatisticService.totalWalking.getEnergyConsumption()));
+            walkCalories.setText(String.valueOf(temp3));
         }
         if (MotionStatisticService.totalRunning != null) {
-            runTime.setText(String.valueOf(MotionStatisticService.totalRunning.getTime() / 60));
-            runDistance.setText(String.valueOf(MotionStatisticService.totalRunning.getDistance()));
+            float temp1 = (float) (Math.round(MotionStatisticService.totalRunning.getTime() / 60.0 * 100)) / 100;
+            float temp2 = (float) (Math.round(MotionStatisticService.totalRunning.getDistance() * 100)) / 100;
+            float temp3 = (float) (Math.round(MotionStatisticService.totalRunning.getEnergyConsumption() * 100)) / 100;
+            runTime.setText(String.valueOf(temp1));
+            runDistance.setText(String.valueOf(temp2));
             runSteps.setText(String.valueOf(MotionStatisticService.totalRunning.getStep()));
-            runCalorie.setText(String.valueOf(MotionStatisticService.totalRunning.getEnergyConsumption()));
+            runCalorie.setText(String.valueOf(temp3));
 
         }
         Log.v(TAG, "refresh movement data succeed");

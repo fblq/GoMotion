@@ -3,8 +3,8 @@ package com.campus.gomotion.service;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.ContactsContract;
 import android.util.Log;
+import com.campus.gomotion.constant.MotionEnum;
 import com.campus.gomotion.constant.UIData;
 import com.campus.gomotion.constant.UserInfo;
 import com.campus.gomotion.kind.Falling;
@@ -22,11 +22,11 @@ import java.util.*;
  */
 public class MotionStatisticService {
     private static final String TAG = "MotionStatisticService";
-    public static Map<Time, Falling> fallingMap = new HashMap<>();
-    public static Map<Time, Moving> walkingMap = new HashMap<>();
-    public static Map<Time, Moving> runningMap = new HashMap<>();
+    public static Map<Time, Falling> fallingMap = new TreeMap<>();
+    public static Map<Time, Moving> walkingMap = new TreeMap<>();
+    public static Map<Time, Moving> runningMap = new TreeMap<>();
 
-    public static Map<Time, Float> fallingLog = new HashMap<>();
+    public static Map<Time, Float> fallingLog = new TreeMap<>();
     public static Moving totalRunning = new Moving();
     public static Moving totalWalking = new Moving();
     /**
@@ -56,73 +56,93 @@ public class MotionStatisticService {
     }
 
     public void motionStatistic(ArrayDeque<DataPack> dataPacks) {
+        MotionEnum motionKind = MotionEnum.UNKNOW;
         float averageAcceleration = averageAcceleration(dataPacks);
         float averageAngular = averageAngular(dataPacks);
         /**
          * 对采集的数据进行分析,得出以下规律
-         * 当合力加速度的均值小于1.2时,处于静止状态,当合力加速的的均值大于1且小于2时,处于
-         * 行走状态,当合力加速度的均值大于2时,处于跑步状态.
-         * 当合力角速度的均值小于10时,处于静止状态,当合力角速度的均值大于20时,处于行走或跑步状态
+         * 当1s内的合力加速度的平均值小于1.1时,处于静止状态,当合力加速的的均值大于1.1且小于1.3时,处于
+         * 行走状态,当合力加速度的均值大于1.3时,处于跑步状态.
+         * 当1s内的合力角速度的平均值小于50时,处于静止状态,当合力角速度的均值大于50时,处于行走或跑步状态
          */
         /**
          * 排除静止情况
          */
-        if (averageAngular < 1 || averageAcceleration > 1.2) {
+        if (averageAngular > 50 || averageAcceleration > 1.1) {
             /**
              * 跌倒情况
              */
             if (isFalling(dataPacks)) {
                 falling.increase();
                 isFall = true;
+                motionKind = MotionEnum.FALLING;
             }
             if (isFall) {
                 long t = System.currentTimeMillis();
                 Time time = new Time(t);
                 fallingLog.put(time, (float) (interval));
                 isFall = false;
+                interval = 0;
             }
             interval++;
             long time = 1;
             float distance = calculateDistance(averageAcceleration, time);
             float energyConsumption = calculateEnergyConsumption(UserInfo.WEIGHT, averageAcceleration, time);
+            /**
+             * 根据角速度大于120的频率判断行走/跑步
+             */
             boolean isRun = isLargeAngularHighFrequency(dataPacks);
             /**
              * 正常行走
              */
-            if (!isRun || averageAcceleration < 2) {
-                Moving moving = new Moving(time, distance, 2, energyConsumption);
+            if (!isRun || averageAcceleration < 1.3) {
+                Moving moving = new Moving(time, distance, 1, energyConsumption);
                 walking.add(moving);
                 totalWalking.add(moving);
+                motionKind = MotionEnum.WALKING;
             }
             /**
              * 正常跑步情况
              */
-            if (isRun || (averageAcceleration > 2 && averageAcceleration < 4)) {
-                Moving moving = new Moving(time, distance, 4, energyConsumption);
+            if (isRun || (averageAcceleration > 1.3 && averageAcceleration < 2)) {
+                Moving moving = new Moving(time, distance, 2, energyConsumption);
                 running.add(moving);
                 totalRunning.add(moving);
+                motionKind = MotionEnum.RUNNING;
             }
         } else {
             Log.v(TAG, "静止状态");
+            motionKind = MotionEnum.STILLING;
         }
         Message message = handler.obtainMessage();
         Bundle bundle = new Bundle();
         if (totalWalking != null) {
-            bundle.putString(UIData.RUN_TIME, String.valueOf((int) (totalWalking.getTime() / 60)));
-            bundle.putString(UIData.RUN_DISTANCE, String.valueOf(totalWalking.getDistance()));
-        } else {
-            bundle.putString(UIData.RUN_TIME, "0");
-            bundle.putString(UIData.RUN_DISTANCE, "0");
-        }
-        if (totalWalking != null) {
-            bundle.putString(UIData.WALK_TIME, String.valueOf((int) (totalRunning.getTime() / 60)));
-            bundle.putString(UIData.WALK_DISTANCE, String.valueOf(totalRunning.getDistance()));
+            /**
+             * 保留浮点数后两位
+             */
+            float temp = (float) (totalWalking.getTime() / 60.0);
+            float walkTime = (float) (Math.round(temp * 100)) / 100;
+            float walkDistance = (float) (Math.round(totalWalking.getDistance() * 100)) / 100;
+            bundle.putString(UIData.WALK_TIME, String.valueOf(walkTime));
+            bundle.putString(UIData.WALK_DISTANCE, String.valueOf(walkDistance));
         } else {
             bundle.putString(UIData.WALK_TIME, "0");
             bundle.putString(UIData.WALK_DISTANCE, "0");
         }
+        if (totalRunning != null) {
+            float temp = (float) (totalRunning.getTime() / 60.0);
+            float runTime = (float) (Math.round(temp * 100)) / 100;
+            float runDistance = (float) (Math.round(totalRunning.getDistance() * 100)) / 100;
+            bundle.putString(UIData.RUN_TIME, String.valueOf(runTime));
+            bundle.putString(UIData.RUN_DISTANCE, String.valueOf(runDistance));
+        } else {
+            bundle.putString(UIData.RUN_TIME, "0");
+            bundle.putString(UIData.RUN_DISTANCE, "0");
+        }
         bundle.putString(UIData.FALLING_COUNT, String.valueOf(calculateFallingTotalCount()));
-        bundle.putString(UIData.FALLING_AVERAGE_TIME, String.valueOf(calculateAverageFallingTime()));
+        float averageFallingTime = (float) (Math.round(calculateAverageFallingTime() * 100)) / 100;
+        bundle.putString(UIData.FALLING_AVERAGE_TIME, String.valueOf(averageFallingTime));
+        bundle.putString(UIData.MOTION_KING, motionKind.getName());
         message.setData(bundle);
         handler.sendMessage(message);
     }
@@ -135,17 +155,32 @@ public class MotionStatisticService {
         Time time = new Time(t);
         if (falling != null) {
             Falling temp = new Falling(falling);
-            fallingMap.put(time, temp);
+            if(fallingMap.containsKey(time)){
+                Falling falling = fallingMap.get(time);
+                falling.add(temp);
+            }else{
+                fallingMap.put(time, temp);
+            }
             falling.clear();
         }
         if (running != null) {
             Moving temp = new Moving(running);
-            runningMap.put(time, temp);
+            if(runningMap.containsKey(time)){
+                Moving moving = runningMap.get(time);
+                moving.add(temp);
+            }else{
+                runningMap.put(time, temp);
+            }
             running.clear();
         }
         if (walking != null) {
             Moving temp = new Moving(walking);
-            walkingMap.put(time, temp);
+            if(walkingMap.containsKey(time)){
+                Moving moving = walkingMap.get(time);
+                moving.add(temp);
+            }else{
+                walkingMap.put(time, temp);
+            }
             walking.clear();
         }
     }
@@ -177,7 +212,7 @@ public class MotionStatisticService {
      * @param dataPacks ArrayDeque<DataPack>
      * @return float
      */
-    private float averageAcceleration(ArrayDeque<DataPack> dataPacks) {
+    public static float averageAcceleration(ArrayDeque<DataPack> dataPacks) {
         float sum = 0, i = 0, temp;
         Accelerometer acceleration;
         if (dataPacks != null && dataPacks.size() > 0) {
@@ -199,7 +234,7 @@ public class MotionStatisticService {
      * @param dataPacks ArrayDeque<DataPack>
      * @return float
      */
-    private float averageAngular(ArrayDeque<DataPack> dataPacks) {
+    public static float averageAngular(ArrayDeque<DataPack> dataPacks) {
         float sum = 0, i = 0, temp;
         AngularVelocity angularVelocity;
         if (dataPacks != null && dataPacks.size() > 0) {
@@ -227,7 +262,7 @@ public class MotionStatisticService {
         if (dataPacks != null && dataPacks.size() > 0) {
             for (DataPack dataPack : dataPacks) {
                 temp = PhysicalConversionUtil.calculateGeometricMeanAngular(dataPack.getAngularVelocity());
-                if (temp > 100) {
+                if (temp > 120) {
                     count++;
                 }
             }
@@ -244,14 +279,14 @@ public class MotionStatisticService {
             for (DataPack dataPack : dataPacks) {
                 temp1 = PhysicalConversionUtil.calculateGeometricMeanAcceleration(dataPack.getAccelerometer());
                 temp2 = PhysicalConversionUtil.calculateGeometricMeanAngular(dataPack.getAngularVelocity());
-                if (temp1 > 3.5) {
+                if (temp1 > 4) {
                     count1++;
                 }
                 if (temp2 > 400) {
                     count2++;
                 }
             }
-            return ((count1 > 0 && count1 < 3) || (count2 > 0 && count2 < 3));
+            return ((count1 > 0 && count1 <= 5) || (count2 > 0 && count2 <= 5));
         } else {
             return false;
         }
@@ -304,11 +339,8 @@ public class MotionStatisticService {
      */
     public static int calculateFallingTotalCount() {
         int result = 0;
-        if (fallingMap != null) {
-            Collection<Falling> values = fallingMap.values();
-            for (Falling falling : values) {
-                result += falling.getCount();
-            }
+        if (fallingLog != null) {
+            return fallingLog.size();
         }
         return result;
     }
@@ -350,7 +382,7 @@ public class MotionStatisticService {
      * @return Map<Time,Double>
      */
     public static Map<Time, Double> calculateTotalStep() {
-        Map<Time, Double> resultMap = new HashMap<>();
+        Map<Time, Double> resultMap = new TreeMap<>();
         Iterator<Time> walkIterator = walkingMap.keySet().iterator();
         Iterator<Time> runIterator = runningMap.keySet().iterator();
         while (walkIterator.hasNext()) {
@@ -368,7 +400,7 @@ public class MotionStatisticService {
      * @return Map<Time,Double>
      */
     public static Map<Time, Double> calculateTotalCalories() {
-        Map<Time, Double> resultMap = new HashMap<>();
+        Map<Time, Double> resultMap = new TreeMap<>();
         Iterator<Time> walkIterator = walkingMap.keySet().iterator();
         Iterator<Time> runIterator = runningMap.keySet().iterator();
         while (walkIterator.hasNext()) {

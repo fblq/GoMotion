@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import com.campus.gomotion.R;
+import com.campus.gomotion.constant.MotionEnum;
 import com.campus.gomotion.constant.UIData;
 import com.campus.gomotion.constant.WifiApInfo;
 import com.campus.gomotion.sensorData.DataPack;
@@ -26,6 +27,7 @@ import com.campus.gomotion.util.PhysicalConversionUtil;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Time;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.Timer;
@@ -40,7 +42,7 @@ import java.util.concurrent.*;
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
 
-    private static String file = "/storage/emulated/0/amotion/yi.txt";
+    private String file = "/storage/emulated/0/amotion/data.txt";
 
     public static String target;
     public static String evaluation;
@@ -48,6 +50,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private TabHost tabHost;
     private Switch communicationSwitch;
+    private Switch motionLogSwitch;
     private Button sportButton;
     private Button monitorButton;
     private Button assessButton;
@@ -65,8 +68,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private EditText movingTarget;
     private EditText selfEvaluation;
 
-    private LinearLayout dateView;
-    private TextView textView;
+    private LinearLayout dataView;
+    private LinearLayout motionView;
+    private TextView dataText;
+    private TextView motionText;
     private MyHandler handler;
     private Context context = this;
     private Switch wifiSpotSwitch;
@@ -81,14 +86,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         tabHost = (TabHost) this.findViewById(R.id.tabhost);
         communicationSwitch = (Switch) this.findViewById(R.id.communication);
+        motionLogSwitch = (Switch) this.findViewById(R.id.motion_log);
         sportButton = (Button) this.findViewById(R.id.sport);
         monitorButton = (Button) this.findViewById(R.id.monitor);
         assessButton = (Button) this.findViewById(R.id.assess);
 
-        dateView = (LinearLayout) this.findViewById(R.id.dataView);
+        dataView = (LinearLayout) this.findViewById(R.id.dataView);
+        motionView = (LinearLayout) this.findViewById(R.id.motionView);
         wifiSpotSwitch = (Switch) this.findViewById(R.id.wifiSpotSwitch);
         synchronizeSwitch = (Switch) this.findViewById(R.id.synchronizeSwitch);
-        textView = (TextView) this.findViewById(R.id.dataTextView);
+        dataText = (TextView) this.findViewById(R.id.dataText);
+        motionText = (TextView) this.findViewById(R.id.motionText);
         walkTime = (TextView) this.findViewById(R.id.walkTime);
         walkDistance = (TextView) this.findViewById(R.id.walkDistance);
         runTime = (TextView) this.findViewById(R.id.runTime);
@@ -117,12 +125,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    dateView.setVisibility(View.VISIBLE);
+                    dataView.setVisibility(View.VISIBLE);
                 } else {
-                    dateView.setVisibility(View.INVISIBLE);
+                    dataView.setVisibility(View.INVISIBLE);
                 }
             }
         });
+
+        motionLogSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    motionView.setVisibility(View.VISIBLE);
+                } else {
+                    motionView.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
+
         sportButton.setOnClickListener(this);
         monitorButton.setOnClickListener(this);
         assessButton.setOnClickListener(this);
@@ -193,23 +213,29 @@ public class MainActivity extends Activity implements View.OnClickListener {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                FileWriter fileWriter = null;
-                PrintWriter printWriter = null;
+               /* FileWriter fileWriter = null;
+                PrintWriter printWriter = null;*/
                 MotionStatisticService motionStatisticService = new MotionStatisticService(handler);
                 try {
-                    fileWriter = new FileWriter(file);
-                    printWriter = new PrintWriter(fileWriter);
+                    /*fileWriter = new FileWriter(file);
+                    printWriter = new PrintWriter(fileWriter);*/
                     while (true) {
                         ArrayDeque<DataPack> dataPacks = SynchronizeService.dataPacks.takeAll();
+                        /*float v = MotionStatisticService.averageAcceleration(dataPacks);
+                        float v1 = MotionStatisticService.averageAngular(dataPacks);
+                        printWriter.print("0A ");
+                        printWriter.print(v + " ");
+                        printWriter.print(v1 + " ");
                         for (DataPack dataPack : dataPacks) {
-                            printWriter.print("0A ");
-                            printWriter.println(dataPack.toString());
+                            printWriter.print(PhysicalConversionUtil.calculateGeometricMeanAcceleration(dataPack.getAccelerometer()) + " ");
+                            printWriter.print(PhysicalConversionUtil.calculateGeometricMeanAngular(dataPack.getAngularVelocity()) + " ");
                         }
+                        printWriter.println();*/
                         motionStatisticService.motionStatistic(dataPacks);
                     }
                 } catch (Exception e) {
                     Log.e(TAG, e.getMessage());
-                } finally {
+                } /*finally {
                     try {
                         if (printWriter != null) {
                             printWriter.close();
@@ -220,7 +246,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     } catch (IOException e) {
                         Log.d(TAG, e.getMessage());
                     }
-                }
+                }*/
             }
         }).start();
 
@@ -294,17 +320,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
             @Override
             public void run() {
                 motionStatisticService.loadDataToCache();
-                /**
-                 * clear cache at 0:00:00 every day
-                 */
-                long t = System.currentTimeMillis();
-                if (t % (1000 * 60) == 0 && t % (1000 * 60 * 60) == 0 && t % (1000 * 60 * 60 * 24) == 0) {
-                    motionStatisticService.clearCache();
-                }
                 Log.v(TAG, "load data to cache");
             }
         };
-        timer.schedule(loadData, 15000, 1000 * 60);
+        timer.schedule(loadData, 10000, 1000 * 60);
     }
 
     @Override
@@ -331,6 +350,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         @Override
         public void handleMessage(Message msg) {
+            long now = System.currentTimeMillis();
+            Time currentTime = new Time(now);
+            String motionKind = MotionEnum.UNKNOW.getName();
             Bundle bundle = msg.getData();
             if (bundle != null && bundle.size() > 0) {
                 walkTime.setText((String) bundle.get(UIData.WALK_TIME));
@@ -339,12 +361,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 runDistance.setText((String) bundle.get(UIData.RUN_DISTANCE));
                 fallingCount.setText((String) (bundle.get(UIData.FALLING_COUNT)));
                 averageTime.setText((String) (bundle.get(UIData.FALLING_AVERAGE_TIME)));
+                motionKind = (String) bundle.get(UIData.MOTION_KING);
             }
-            if (textView.getLineCount() >= 20) {
-                textView.setText("");
+            if (motionKind != null && !motionKind.equals(MotionEnum.UNKNOW.getName())) {
+                if (motionText.getLineCount() >= 20) {
+                    motionText.setText("");
+                } else {
+                    motionText.append(String.valueOf(currentTime) + " --》 " + motionKind + "\n");
+                }
+            }
+            if (dataText.getLineCount() >= 20) {
+                dataText.setText("");
             }
             if (msg.what == 0x12) {
-                textView.append(msg.obj.toString() + " ");
+                dataText.append(msg.obj.toString() + " ");
             }
             Log.v(TAG, "refresh ui succeed");
         }

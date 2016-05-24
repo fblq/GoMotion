@@ -42,11 +42,11 @@ public class CaloriesChart extends AbstractDemoChart {
         String[] titles = new String[]{"卡路里"};
         List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
-        int xStart = 0;
+        float xStart = 0;
         Map<Time, Double> caloriesMap = MotionStatisticService.calculateTotalCalories();
         int size = caloriesMap.size();
         if (size > 0) {
-            xStart = (int) TypeConvertUtil.timeToDouble((Time) caloriesMap.keySet().toArray()[0]);
+            xStart = (float) TypeConvertUtil.timeToDouble((Time) caloriesMap.keySet().toArray()[0]);
         }
         double[] time = new double[size];
         double[] calories = new double[size];
@@ -56,13 +56,18 @@ public class CaloriesChart extends AbstractDemoChart {
             Time key = iterator.next();
             Double value = caloriesMap.get(key);
             time[i] = TypeConvertUtil.timeToDouble(key);
-            calories[i] = value;
+            calories[i] = (double) (Math.round(value * 100)) / 100;
             i++;
         }
         xValues.add(time);
         yValues.add(calories);
         int[] colors = new int[]{Color.BLUE};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
+        renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
+        renderer.getSeriesRendererAt(0).setChartValuesTextSize(30);
+        renderer.setXLabelsAlign(Paint.Align.LEFT);// 数据从左到右显示
+        renderer.setYLabelsAlign(Paint.Align.LEFT);
+        renderer.setPanEnabled(true, false);
         renderer.setChartTitle("卡路里");
         renderer.setChartTitleTextSize(60);
         renderer.setAxisTitleTextSize(40);
@@ -72,11 +77,11 @@ public class CaloriesChart extends AbstractDemoChart {
         renderer.setLabelsColor(Color.GREEN);
         renderer.setAxesColor(Color.BLUE);
         renderer.setXLabels(20);
-        renderer.setXAxisMin(xStart);
+        renderer.setXAxisMin(xStart - 0.2);
         renderer.setXAxisMax(xStart + 0.2);
         renderer.setYLabels(6);
         renderer.setYAxisMin(0);
-        renderer.setYAxisMax(60);
+        renderer.setYAxisMax(80);
         return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }

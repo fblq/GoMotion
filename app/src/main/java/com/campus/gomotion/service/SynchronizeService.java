@@ -7,21 +7,13 @@ import com.campus.gomotion.sensorData.Accelerometer;
 import com.campus.gomotion.sensorData.AngularVelocity;
 import com.campus.gomotion.sensorData.DataPack;
 import com.campus.gomotion.util.CacheUtil;
-import com.campus.gomotion.util.CircularQueueUtil;
 import com.campus.gomotion.sensorData.Quaternion;
-import com.campus.gomotion.util.BasicConversionUtil;
 
 import java.io.*;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Author: zhong.zhou
@@ -47,6 +39,10 @@ public class SynchronizeService implements Callable<String> {
 
     @Override
     public String call() {
+        /**
+         * 数据发送频率为20ms/次
+         * 数据包包括12个float类型的数据,1s内接收的数据大小为4*12*50=2400
+         */
         ByteBuffer byteBuffer = ByteBuffer.allocate(2400);
         try {
             int i, len = 0;

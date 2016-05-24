@@ -2,6 +2,7 @@ package com.campus.gomotion.chart;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.view.View;
 import com.campus.gomotion.kind.Falling;
 import com.campus.gomotion.service.MotionStatisticService;
@@ -42,11 +43,12 @@ public class MonitorChart extends AbstractDemoChart {
         String[] titles = new String[]{"跌倒监测"};
         List<double[]> xValues = new ArrayList<>();
         List<double[]> yValues = new ArrayList<>();
-        int xStart = 0;
-        Map<Time, Falling> fallingMap = MotionStatisticService.fallingMap;
+        float xStart = 0;
+        Map<Time, Falling> fallingMap = new TreeMap<>();
+        fallingMap.putAll(MotionStatisticService.fallingMap);
         int size = fallingMap.size();
         if (size > 0) {
-            xStart = (int) TypeConvertUtil.timeToDouble((Time) fallingMap.keySet().toArray()[0]);
+            xStart = (float) TypeConvertUtil.timeToDouble((Time) fallingMap.keySet().toArray()[0]);
         }
         double[] time = new double[size];
         double[] fallingCount = new double[size];
@@ -63,6 +65,11 @@ public class MonitorChart extends AbstractDemoChart {
         yValues.add(fallingCount);
         int[] colors = new int[]{Color.BLUE};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
+        renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
+        renderer.getSeriesRendererAt(0).setChartValuesTextSize(30);
+        renderer.setXLabelsAlign(Paint.Align.LEFT);// 数据从左到右显示
+        renderer.setYLabelsAlign(Paint.Align.LEFT);
+        renderer.setPanEnabled(true, false);
         renderer.setChartTitle("跌倒监测");
         renderer.setChartTitleTextSize(60);
         renderer.setAxisTitleTextSize(40);
@@ -72,11 +79,11 @@ public class MonitorChart extends AbstractDemoChart {
         renderer.setLabelsColor(Color.GREEN);
         renderer.setAxesColor(Color.BLUE);
         renderer.setXLabels(20);
-        renderer.setXAxisMin(xStart);
+        renderer.setXAxisMin(xStart - 0.2);
         renderer.setXAxisMax(xStart + 0.2);
         renderer.setYLabels(10);
         renderer.setYAxisMin(0);
-        renderer.setYAxisMax(20);
+        renderer.setYAxisMax(30);
         return ChartFactory.getBarChartView(context, buildDataset(titles, xValues, yValues), renderer, BarChart.Type.STACKED);
     }
 }

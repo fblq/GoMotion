@@ -55,6 +55,11 @@ public class EvaluateChart extends AbstractDemoChart {
         }
         int[] colors = new int[]{Color.BLUE, Color.GRAY};
         XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
+        renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
+        renderer.getSeriesRendererAt(0).setChartValuesTextSize(30);
+        renderer.setXLabelsAlign(Paint.Align.LEFT);// 数据从左到右显示
+        renderer.setYLabelsAlign(Paint.Align.LEFT);
+        renderer.setPanEnabled(true, false);
         renderer.setChartTitle("评估");
         renderer.setChartTitleTextSize(60);
         renderer.setAxisTitleTextSize(40);

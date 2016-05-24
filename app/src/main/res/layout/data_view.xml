@@ -62,8 +62,9 @@
                 android:scrollbarStyle="insideInset"
                 android:scrollbars="vertical"
                 android:inputType="textMultiLine"
+                android:textColor="#000000"
                 android:ems="10"
-                android:id="@+id/dataTextView"
+                android:id="@+id/dataText"
                 android:textIsSelectable="false"
                 android:hint="同步的数据序号..."/>
     </LinearLayout>

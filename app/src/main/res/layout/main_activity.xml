@@ -23,13 +23,27 @@
             <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="fill_parent"
-                    android:orientation="horizontal" android:weightSum="1">
+                    android:orientation="horizontal"
+                    android:weightSum="1">
 
                 <Switch
                         android:layout_width="wrap_content"
                         android:layout_height="fill_parent"
                         android:text="热点通信"
                         android:id="@+id/communication"
+                        android:layout_marginRight="30dp"
+                        android:textColor="#000000"
+                        android:textSize="20sp"
+                        android:textOff="OFF"
+                        android:textOn="ON"
+                        android:checked="false"
+                        android:thumb="@drawable/switch_thumb"
+                        android:track="@drawable/switch_track"/>
+                <Switch
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:text="实时显示"
+                        android:id="@+id/motion_log"
                         android:layout_marginRight="30dp"
                         android:textColor="#000000"
                         android:textSize="20sp"
@@ -53,6 +67,8 @@
                 <include android:id="@+id/view3"
                          layout="@layout/view3"/>
                 <include android:id="@+id/dataView" layout="@layout/data_view"
+                         android:visibility="invisible"/>
+                <include android:id="@+id/motionView" layout="@layout/motion_view"
                          android:visibility="invisible"/>
             </FrameLayout>
         </LinearLayout>
