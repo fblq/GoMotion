@@ -42,8 +42,6 @@ import java.util.concurrent.*;
 public class MainActivity extends Activity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
 
-    private String file = "/storage/emulated/0/amotion/data.txt";
-
     public static String target;
     public static String evaluation;
     public static String completions;
@@ -213,40 +211,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         new Thread(new Runnable() {
             @Override
             public void run() {
-               /* FileWriter fileWriter = null;
-                PrintWriter printWriter = null;*/
                 MotionStatisticService motionStatisticService = new MotionStatisticService(handler);
                 try {
-                    /*fileWriter = new FileWriter(file);
-                    printWriter = new PrintWriter(fileWriter);*/
                     while (true) {
                         ArrayDeque<DataPack> dataPacks = SynchronizeService.dataPacks.takeAll();
-                        /*float v = MotionStatisticService.averageAcceleration(dataPacks);
-                        float v1 = MotionStatisticService.averageAngular(dataPacks);
-                        printWriter.print("0A ");
-                        printWriter.print(v + " ");
-                        printWriter.print(v1 + " ");
-                        for (DataPack dataPack : dataPacks) {
-                            printWriter.print(PhysicalConversionUtil.calculateGeometricMeanAcceleration(dataPack.getAccelerometer()) + " ");
-                            printWriter.print(PhysicalConversionUtil.calculateGeometricMeanAngular(dataPack.getAngularVelocity()) + " ");
-                        }
-                        printWriter.println();*/
                         motionStatisticService.motionStatistic(dataPacks);
                     }
                 } catch (Exception e) {
                     Log.e(TAG, e.getMessage());
-                } /*finally {
-                    try {
-                        if (printWriter != null) {
-                            printWriter.close();
-                        }
-                        if (fileWriter != null) {
-                            fileWriter.close();
-                        }
-                    } catch (IOException e) {
-                        Log.d(TAG, e.getMessage());
-                    }
-                }*/
+                }
             }
         }).start();
 

@@ -37,6 +37,8 @@ public class SynchronizeService implements Callable<String> {
         this.handler = handler;
     }
 
+    private String file = "/storage/emulated/0/amotion/data.txt";
+
     @Override
     public String call() {
         /**
@@ -44,24 +46,29 @@ public class SynchronizeService implements Callable<String> {
          * 数据包包括12个float类型的数据,1s内接收的数据大小为4*12*50=2400
          */
         ByteBuffer byteBuffer = ByteBuffer.allocate(2400);
+        FileWriter fileWriter = null;
+        PrintWriter printWriter = null;
         try {
             int i, len = 0;
-            double packHead = 0, packCount = 0;
+            byte packHead = 0;
+            int packCount = 0;
             float packContent;
+            fileWriter = new FileWriter(file);
+            printWriter = new PrintWriter(fileWriter);
             while (socketChannel.read(byteBuffer) != -1) {
                 /**
                  * 准备读取数据
                  */
                 byteBuffer.flip();
                 for (i = 0; byteBuffer.hasRemaining(); i++) {
-                    packHead = byteBuffer.order(ByteOrder.nativeOrder()).getFloat();
-                    if (packHead == 110110) {
+                    packHead = byteBuffer.order(ByteOrder.nativeOrder()).get();
+                    if (packHead == 80) {
                         DataPack dataPack = new DataPack();
                         Quaternion quaternion = new Quaternion();
                         Accelerometer accelerometer = new Accelerometer();
                         AngularVelocity angularVelocity = new AngularVelocity();
                         if (byteBuffer.hasRemaining()) {
-                            packCount = byteBuffer.order(ByteOrder.nativeOrder()).getFloat();
+                            packCount = byteBuffer.order(ByteOrder.nativeOrder()).getInt();
                         }
                         for (i = 0; i < 10; i++) {
                             if (byteBuffer.hasRemaining()) {
@@ -102,6 +109,9 @@ public class SynchronizeService implements Callable<String> {
                         }
                         dataPack.setQuaternion(quaternion).setAccelerometer(accelerometer).setAngularVelocity(angularVelocity);
                         dataPacks.put(dataPack);
+                        printWriter.print(packHead+" ");
+                        printWriter.print(packCount+" ");
+                        printWriter.println(dataPack.toString());
                         Message message = handler.obtainMessage();
                         message.what = 0x12;
                         message.obj = packCount;
@@ -120,6 +130,12 @@ public class SynchronizeService implements Callable<String> {
             Log.v(TAG, "unexpected exception");
         } finally {
             try {
+                if (printWriter != null) {
+                    printWriter.close();
+                }
+                if (fileWriter != null) {
+                    fileWriter.close();
+                }
                 if (socketChannel != null) {
                     socketChannel.close();
                 }
