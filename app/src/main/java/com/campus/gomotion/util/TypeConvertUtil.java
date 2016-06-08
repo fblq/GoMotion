@@ -15,7 +15,7 @@ public class TypeConvertUtil {
      * @return double
      */
     public static double timeToDouble(Time t) {
-        double result, hours, minutes, seconds;
+        double hours, minutes, seconds;
         String string = t.toString();
         String[] strings = string.split(":");
         hours = Double.parseDouble(strings[0]);
