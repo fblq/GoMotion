@@ -195,7 +195,7 @@ public class CircleBar extends View {
      *
      * @param Maxstepnumber
      */
-    public void setMaxstepnumber(int Maxstepnumber) {
+    public void setMaxStepNumber(int Maxstepnumber) {
         stepnumbermax = Maxstepnumber;
     }
 

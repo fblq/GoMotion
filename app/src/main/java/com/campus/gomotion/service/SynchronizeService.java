@@ -43,15 +43,19 @@ public class SynchronizeService implements Callable<String> {
     public String call() {
         /**
          * 数据发送频率为20ms/次
-         * 数据包包括12个float类型的数据,1s内接收的数据大小为4*12*50=2400
+         * 数据包包括12个float类型的数据,1s内接收的数据大小为(4*10+6)*50=2300
          */
-        ByteBuffer byteBuffer = ByteBuffer.allocate(2400);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(2300);
         FileWriter fileWriter = null;
         PrintWriter printWriter = null;
+        boolean notLosing = true;
+        long count = 0;
         try {
-            int i, len = 0;
-            byte packHead = 0;
-            int packCount = 0;
+            String hexStr = "0123456789ABCDEF";
+            StringBuilder stringBuilder = new StringBuilder();
+            int i, j;
+            byte a, b, temp;
+            String packHead = "", packCount = "";
             float packContent;
             fileWriter = new FileWriter(file);
             printWriter = new PrintWriter(fileWriter);
@@ -61,15 +65,24 @@ public class SynchronizeService implements Callable<String> {
                  */
                 byteBuffer.flip();
                 for (i = 0; byteBuffer.hasRemaining(); i++) {
-                    packHead = byteBuffer.order(ByteOrder.nativeOrder()).get();
-                    if (packHead == 80) {
+                    a = byteBuffer.order(ByteOrder.BIG_ENDIAN).get();
+                    b = byteBuffer.order(ByteOrder.BIG_ENDIAN).get();
+                    packHead = stringBuilder.append(hexStr.charAt(a >> 4 & 0x0f))
+                            .append(hexStr.charAt(a & 0x0f)).append("-")
+                            .append(hexStr.charAt(b >> 4 & 0x0f))
+                            .append(hexStr.charAt(b & 0x0f)).toString();
+                    stringBuilder.delete(0, stringBuilder.length());
+                    for (j = 0; j < 4; j++) {
+                        temp = byteBuffer.order(ByteOrder.BIG_ENDIAN).get();
+                        packCount = stringBuilder.append(hexStr.charAt(temp >> 4 & 0x0f))
+                                .append(hexStr.charAt(temp & 0x0f)).toString();
+                    }
+                    stringBuilder.delete(0, stringBuilder.length());
+                    if (packHead.equals("80-0A")) {
                         DataPack dataPack = new DataPack();
                         Quaternion quaternion = new Quaternion();
                         Accelerometer accelerometer = new Accelerometer();
                         AngularVelocity angularVelocity = new AngularVelocity();
-                        if (byteBuffer.hasRemaining()) {
-                            packCount = byteBuffer.order(ByteOrder.nativeOrder()).getInt();
-                        }
                         for (i = 0; i < 10; i++) {
                             if (byteBuffer.hasRemaining()) {
                                 packContent = byteBuffer.order(ByteOrder.nativeOrder()).getFloat();
@@ -109,13 +122,15 @@ public class SynchronizeService implements Callable<String> {
                         }
                         dataPack.setQuaternion(quaternion).setAccelerometer(accelerometer).setAngularVelocity(angularVelocity);
                         dataPacks.put(dataPack);
-                        printWriter.print(packHead+" ");
-                        printWriter.print(packCount+" ");
+                        printWriter.print(packHead + " ");
+                        printWriter.print(packCount + " ");
                         printWriter.println(dataPack.toString());
+                        notLosing = (count == Long.parseLong(packCount, 16));
                         Message message = handler.obtainMessage();
                         message.what = 0x12;
-                        message.obj = packCount;
+                        message.obj = notLosing;
                         handler.sendMessage(message);
+                        count++;
                     }
                 }
                 /**
@@ -149,5 +164,11 @@ public class SynchronizeService implements Callable<String> {
 
         Log.v(TAG, "synchronization service finished");
         return "synchronization service finished";
+    }
+
+    public static void main(String[] args) {
+        String str = "00000001";
+        long l = Long.parseLong(str, 16);
+        System.out.println(l);
     }
 }

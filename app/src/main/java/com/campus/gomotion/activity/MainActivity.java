@@ -258,15 +258,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onStart();
         target = movingTarget.getText().toString();
         if (!target.isEmpty()) {
-            circleBar.setMaxstepnumber(Integer.parseInt(target));
+            circleBar.setMaxStepNumber(Integer.parseInt(target));
         } else {
-            circleBar.setMaxstepnumber(10000);
+            circleBar.setMaxStepNumber(1000);
         }
         long currentCompletion = MotionStatisticService.calculateCompletion();
         if (!target.isEmpty()) {
             completions = String.valueOf(100 * (float) currentCompletion / Float.parseFloat(target));
         } else {
-            completions = String.valueOf(100 * (float) currentCompletion / 10000);
+            completions = String.valueOf(100 * (float) currentCompletion / 1000);
         }
         evaluation = selfEvaluation.getText().toString();
         circleBar.update((int) currentCompletion, 800);

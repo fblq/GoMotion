@@ -36,7 +36,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="number"
                         android:textColor="#000000"
-                        android:hint="默认10000"/>
+                        android:hint="默认1000"/>
             </TableRow>
             <TableRow>
                 <TextView
